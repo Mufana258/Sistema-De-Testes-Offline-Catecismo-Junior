@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema de Testes Offline — Catecismo Júnior</title>
+<style>
+:root {
+  --bg: #000000;
+  --fg: #FFFFFF;
+  --accent: #FF3333;
+  --accent-light: #FF6666;
+  --success: #00FF66;
+  --card-bg: #0a0a0a;
+  --radius: 14px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); font-family: "Segoe UI", Tahoma, Verdana, sans-serif; font-size: 20px; line-height: 1.5; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+/* Header & Top Bar */
+header { border-bottom: 3px solid #333; padding-bottom: 16px; margin-bottom: 20px; }
+.top-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+h1 { color: var(--accent); font-size: 1.85rem; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+.badge { display: inline-flex; align-items: center; gap: 6px; background: #111; border: 2px solid var(--success); color: var(--success); border-radius: 999px; padding: 4px 14px; font-size: 0.85rem; font-weight: 700; }
+.lead { margin: 0 0 16px; opacity: 0.9; font-size: 1.05rem; }
+
+/* Navigation Tabs */
+.nav-tabs { display: flex; gap: 12px; margin: 16px 0; }
+.nav-tab {
+  flex: 1; text-align: center; background: #111; color: #FFF; border: 4px solid #444;
+  border-radius: var(--radius); padding: 14px 18px; font-size: 1.2rem; font-weight: 800;
+  cursor: pointer; min-height: 62px; transition: all 0.15s ease;
+}
+.nav-tab:hover, .nav-tab:focus { border-color: var(--accent); color: #FFF; outline: none; }
+.nav-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* Quick Action Strip */
+.action-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.action-strip button { flex: 1 1 180px; min-height: 52px; font-size: 1rem; padding: 10px 14px; margin: 0; text-align: center; }
+
+/* General Controls */
+label { display: block; font-weight: 700; margin: 0 0 8px; color: var(--accent); font-size: 1.1rem; }
+input[type=text], textarea {
+  width: 100%; background: #000; color: var(--fg); border: 4px solid var(--fg);
+  border-radius: var(--radius); padding: 16px; font-size: 1.15rem; font-family: inherit;
+}
+input[type=text]:focus, textarea:focus { outline: 6px solid var(--accent); border-color: var(--accent); }
+button {
+  background: #000; color: var(--fg); border: 4px solid var(--fg); border-radius: var(--radius);
+  padding: 18px 22px; font-size: 1.15rem; font-weight: 800; font-family: inherit; cursor: pointer;
+  min-height: 66px; width: 100%; text-align: left; margin: 0 0 14px; transition: all 0.15s ease;
+}
+button:hover, button:focus { background: var(--accent); color: #000; border-color: var(--accent); outline: none; }
+button.selected { background: var(--accent); color: #000; border-color: var(--accent); }
+button.primary { background: var(--accent); color: #000; border-color: var(--accent); text-align: center; }
+button.primary:hover, button.primary:focus { background: #fff; border-color: #fff; color: #000; }
+button.success { background: var(--success); color: #000; border-color: var(--success); text-align: center; }
+button.success:hover, button.success:focus { background: #fff; border-color: #fff; color: #000; }
+
+.card { border: 4px solid var(--accent); border-radius: var(--radius); padding: 20px; margin: 0 0 22px; background: #000; }
+.row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+.row > * { flex: 1 1 200px; }
+.opt { display: flex; align-items: center; gap: 14px; margin: 0 0 14px; }
+.opt input[type=radio] { width: 36px; height: 36px; accent-color: var(--accent); flex: 0 0 auto; cursor: pointer; }
+.opt input[type=text] { flex: 1 1 auto; }
+.opt .del { flex: 0 0 auto; width: 64px; text-align: center; padding: 14px 0; margin-bottom: 0; }
+.tag { display: inline-block; border: 3px solid var(--fg); border-radius: 999px; padding: 4px 16px; font-size: 0.95rem; margin-bottom: 12px; font-weight: 700; }
+.hint { font-size: 0.95rem; opacity: 0.85; margin: 6px 0 0; }
+.status { border: 4px dashed var(--fg); border-radius: var(--radius); padding: 16px; margin-top: 20px; font-weight: 700; font-size: 1.1rem; }
+.status.err { border-color: var(--accent); color: var(--accent); }
+
+/* Student Mode Elements */
+.num-bar { display: flex; gap: 12px; margin: 0 0 18px; }
+.num-btn { flex: 1; text-align: center; font-size: 1.8rem; font-weight: 900; padding: 14px 0; min-height: 72px; margin: 0; }
+.num-badge { display: inline-block; background: var(--accent); color: #000; font-weight: 900; padding: 2px 14px; border-radius: 8px; margin-right: 12px; }
+.score { font-size: 2.2rem; font-weight: 900; color: var(--accent); border: 4px solid var(--accent); border-radius: 14px; padding: 18px; text-align: center; margin: 0 0 22px; }
+.center { text-align: center; }
+.qr { background: #FFF; padding: 16px; border-radius: 14px; display: inline-block; margin: 16px 0; }
+.card-box { border: 4px solid var(--accent); border-radius: 14px; padding: 20px; margin: 0 0 20px; background: #000; }
+.err-item { border-left: 6px solid var(--accent); background: #111; padding: 14px 18px; margin: 0 0 14px; border-radius: 0 10px 10px 0; font-size: 1.1rem; }
+.ok-box { border: 4px solid var(--success); color: var(--success); border-radius: 14px; padding: 20px; margin: 0 0 20px; font-weight: 800; font-size: 1.25rem; text-align: center; }
+.raw-payload { background: #111; border: 2px solid #555; border-radius: 10px; padding: 14px; font-family: monospace; font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; text-align: left; max-height: 220px; overflow-y: auto; margin-top: 14px; }
+.hidden { display: none !important; }
+
+.opt-grid { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; flex-grow: 1; }
+.opt-btn {
+  flex: 1;
+  min-height: 15vh;
+  font-size: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+.opt-btn .num-badge {
+  font-size: 2.2rem;
+  margin: 0 0 12px 0;
+  padding: 8px 32px;
+  border-radius: 12px;
+}
+.opt-btn span { font-weight: 700; line-height: 1.3; }
+#studentApp { display: flex; flex-direction: column; min-height: 80vh; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top-bar">
+      <h1>Sistema de Testes Offline — Catecismo Júnior</h1>
+      <span class="badge">● 100% Offline • Sem Internet</span>
+    </div>
+    <p class="lead">Programa único e completo (HTML+CSS+JavaScript). Crie testes acessíveis, teste diretamente no ecrã ou partilhe offline.</p>
+    <div class="nav-tabs" role="tablist">
+      <button type="button" class="nav-tab active" id="tabTeacher" role="tab" aria-selected="true" data-speak="Modo Professor: Criar e editar teste">👨‍🏫 Modo Professor (Criar Teste)</button>
+      <button type="button" class="nav-tab" id="tabStudent" role="tab" aria-selected="false" data-speak="Modo Aluno: Fazer o teste agora">🎓 Modo Aluno (Fazer Teste)</button>
+    </div>
+    <div class="action-strip">
+      <button type="button" class="primary" id="stripTestNow" data-speak="Fazer o teste criado agora neste ecrã">▶ Fazer Teste Agora</button>
+      <button type="button" id="stripDownloadSelf" data-speak="Descarregar esta aplicação completa em ficheiro index.html para usar offline">💾 Descarregar index.html Completo</button>
+      <button type="button" id="ttsToggle" data-speak="Ligar ou desligar leitura em voz alta">🔊 Voz: LIGADA</button>
+    </div>
+  </header>
+
+  <!-- TEACHER SECTION -->
+  <main id="teacherSection">
+    <div class="card">
+      <label for="testName">Nome do teste</label>
+      <input id="testName" type="text" value="Teste de Catecismo Júnior" placeholder="ex.: Capítulo 1 — A Bíblia" data-speak="Nome do teste. Escreva o nome do teste.">
+      <p class="hint">O ficheiro e os códigos QR gerados terão este nome.</p>
+    </div>
+
+    <div id="questions"></div>
+
+    <div class="row">
+      <button type="button" id="addQ" data-speak="Adicionar uma pergunta ao teste">➕ Adicionar pergunta</button>
+      <button type="button" class="primary" id="genStudentFile" data-speak="Gerar e descarregar ficheiro de teste individual para o aluno">⬇ Descarregar Teste do Aluno (.html)</button>
+    </div>
+
+    <div class="row" style="margin-top: 14px;">
+      <button type="button" id="exportJson" data-speak="Guardar perguntas num ficheiro JSON">💾 Exportar Perguntas (JSON)</button>
+      <button type="button" id="importJsonBtn" data-speak="Carregar perguntas de um ficheiro">📂 Importar Teste (JSON/HTML)</button>
+      <input type="file" id="importFileInput" accept=".json,.html" class="hidden">
+    </div>
+
+    <div class="status" id="status" role="status" aria-live="polite">Carregado com perguntas de demonstração. Pode editar ou adicionar perguntas.</div>
+  </main>
+
+  <!-- STUDENT SECTION -->
+  <main id="studentSection" class="hidden">
+    <div id="studentApp"></div>
+  </main>
+</div>
+
+<!-- EMBEDDED QR CODE LIBRARY (PURE JAVASCRIPT, OFFLINE) -->
+<script id="qrlib">
+var _1=Object.create;var{getPrototypeOf:S1,defineProperty:f0,getOwnPropertyNames:b1}=Object;var g1=Object.prototype.hasOwnProperty;var C1=(Z,$,Y)=>{Y=Z!=null?_1(S1(Z)):{};let Q=$||!Z||!Z.__esModule?f0(Y,"default",{value:Z,enumerable:!0}):Y;for(let J of b1(Z))if(!g1.call(Q,J))f0(Q,J,{get:()=>Z[J],enumerable:!0});return Q};var O=(Z,$)=>()=>($||Z(($={exports:{}}).exports,$),$.exports);var M0=O((l5,D0)=>{D0.exports=function(){return typeof Promise==="function"&&Promise.prototype&&Promise.prototype.then}});var P=O((p1)=>{var s,u1=[0,26,44,70,100,134,172,196,242,292,346,404,466,532,581,655,733,815,901,991,1085,1156,1258,1364,1474,1588,1706,1828,1921,2051,2185,2323,2465,2611,2761,2876,3034,3196,3362,3532,3706];p1.getSymbolSize=function($){if(!$)throw Error('"version" cannot be null or undefined');if($<1||$>40)throw Error('"version" should be in range from 1 to 40');return $*4+17};p1.getSymbolTotalCodewords=function($){return u1[$]};p1.getBCHDigit=function(Z){let $=0;while(Z!==0)$++,Z>>>=1;return $};p1.setToSJISFunction=function($){if(typeof $!=="function")throw Error('"toSJISFunc" is not a valid function.');s=$};p1.isKanjiModeEnabled=function(){return typeof s<"u"};p1.toSJIS=function($){return s($)}});var g=O((s1)=>{s1.L={bit:1};s1.M={bit:0};s1.Q={bit:3};s1.H={bit:2};function i1(Z){if(typeof Z!=="string")throw Error("Param is not a string");switch(Z.toLowerCase()){case"l":case"low":return s1.L;case"m":case"medium":return s1.M;case"q":case"quartile":return s1.Q;case"h":case"high":return s1.H;default:throw Error("Unknown EC Level: "+Z)}}s1.isValid=function($){return $&&typeof $.bit<"u"&&$.bit>=0&&$.bit<4};s1.from=function($,Y){if(s1.isValid($))return $;try{return i1($)}catch(Q){return Y}}});var S0=O((i5,_0)=>{function x0(){this.buffer=[],this.length=0}x0.prototype={get:function(Z){let $=Math.floor(Z/8);return(this.buffer[$]>>>7-Z%8&1)===1},put:function(Z,$){for(let Y=0;Y<$;Y++)this.putBit((Z>>>$-Y-1&1)===1)},getLengthInBits:function(){return this.length},putBit:function(Z){let $=Math.floor(this.length/8);if(this.buffer.length<=$)this.buffer.push(0);if(Z)this.buffer[$]|=128>>>this.length%8;this.length++}};_0.exports=x0});var g0=O((s5,b0)=>{function L(Z){if(!Z||Z<1)throw Error("BitMatrix size must be defined and greater than 0");this.size=Z,this.data=new Uint8Array(Z*Z),this.reservedBit=new Uint8Array(Z*Z)}L.prototype.set=function(Z,$,Y,Q){let J=Z*this.size+$;if(this.data[J]=Y,Q)this.reservedBit[J]=!0};L.prototype.get=function(Z,$){return this.data[Z*this.size+$]};L.prototype.xor=function(Z,$,Y){this.data[Z*this.size+$]^=Y};L.prototype.isReserved=function(Z,$){return this.reservedBit[Z*this.size+$]};b0.exports=L});var u0=O((a1)=>{var r1=P().getSymbolSize;a1.getRowColCoords=function($){if($===1)return[];let Y=Math.floor($/7)+2,Q=r1($),J=Q===145?26:Math.ceil((Q-13)/(2*Y-2))*2,q=[Q-7];for(let W=1;W<Y-1;W++)q[W]=q[W-1]-J;return q.push(6),q.reverse()};a1.getPositions=function($){let Y=[],Q=a1.getRowColCoords($),J=Q.length;for(let q=0;q<J;q++)for(let W=0;W<J;W++){if(q===0&&W===0||q===0&&W===J-1||q===J-1&&W===0)continue;Y.push([Q[q],Q[W]])}return Y}});var p0=O(($2)=>{var e1=P().getSymbolSize;$2.getPositions=function($){let Y=e1($);return[[0,0],[Y-7,0],[0,Y-7]]}});var d0=O((Q2)=>{Q2.Patterns={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7};var f={N1:3,N2:3,N3:40,N4:10};Q2.isValid=function($){return $!=null&&$!==""&&!isNaN($)&&$>=0&&$<=7};Q2.from=function($){return Q2.isValid($)?parseInt($,10):void 0};Q2.getPenaltyN1=function($){let Y=$.size,Q=0,J=0,q=0,W=null,K=null;for(let X=0;X<Y;X++){J=q=0,W=K=null;for(let H=0;H<Y;H++){let F=$.get(X,H);if(F===W)J++;else{if(J>=5)Q+=f.N1+(J-5);W=F,J=1}if(F=$.get(H,X),F===K)q++;else{if(q>=5)Q+=f.N1+(q-5);K=F,q=1}}if(J>=5)Q+=f.N1+(J-5);if(q>=5)Q+=f.N1+(q-5)}return Q};Q2.getPenaltyN2=function($){let Y=$.size,Q=0;for(let J=0;J<Y-1;J++)for(let q=0;q<Y-1;q++){let W=$.get(J,q)+$.get(J,q+1)+$.get(J+1,q)+$.get(J+1,q+1);if(W===4||W===0)Q++}return Q*f.N2};Q2.getPenaltyN3=function($){let Y=$.size,Q=0,J=0,q=0;for(let W=0;W<Y;W++){J=q=0;for(let K=0;K<Y;K++){if(J=J<<1&2047|$.get(W,K),K>=10&&(J===1488||J===93))Q++;if(q=q<<1&2047|$.get(K,W),K>=10&&(q===1488||q===93))Q++}}return Q*f.N3};Q2.getPenaltyN4=function($){let Y=0,Q=$.data.length;for(let q=0;q<Q;q++)Y+=$.data[q];return Math.abs(Math.ceil(Y*100/Q/5)-10)*f.N4};function Z2(Z,$,Y){switch(Z){case Q2.Patterns.PATTERN000:return($+Y)%2===0;case Q2.Patterns.PATTERN001:return $%2===0;case Q2.Patterns.PATTERN010:return Y%3===0;case Q2.Patterns.PATTERN011:return($+Y)%3===0;case Q2.Patterns.PATTERN100:return(Math.floor($/2)+Math.floor(Y/3))%2===0;case Q2.Patterns.PATTERN101:return $*Y%2+$*Y%3===0;case Q2.Patterns.PATTERN110:return($*Y%2+$*Y%3)%2===0;case Q2.Patterns.PATTERN111:return($*Y%3+($+Y)%2)%2===0;default:throw Error("bad maskPattern:"+Z)}}Q2.applyMask=function($,Y){let Q=Y.size;for(let J=0;J<Q;J++)for(let q=0;q<Q;q++){if(Y.isReserved(q,J))continue;Y.xor(q,J,Z2($,q,J))}};Q2.getBestMask=function($,Y){let Q=Object.keys(Q2.Patterns).length,J=0,q=1/0;for(let W=0;W<Q;W++){Y(W),Q2.applyMask(W,$);let K=Q2.getPenaltyN1($)+Q2.getPenaltyN2($)+Q2.getPenaltyN3($)+Q2.getPenaltyN4($);if(Q2.applyMask(W,$),K<q)q=K,J=W}return J}});var r=O((W2)=>{var h=g(),C=[1,1,1,1,1,1,1,1,1,1,2,2,1,2,2,4,1,2,4,4,2,4,4,4,2,4,6,5,2,4,6,6,2,5,8,8,4,5,8,8,4,5,8,11,4,8,10,11,4,9,12,16,4,9,16,16,6,10,12,18,6,10,17,16,6,11,16,19,6,13,18,21,7,14,21,25,8,16,20,25,8,17,23,25,9,17,23,34,9,18,25,30,10,20,27,32,12,21,29,35,12,23,34,37,12,25,34,40,13,26,35,42,14,28,38,45,15,29,40,48,16,31,43,51,17,33,45,54,18,35,48,57,19,37,51,60,19,38,53,63,20,40,56,66,21,43,59,70,22,45,62,74,24,47,65,77,25,49,68,81],u=[7,10,13,17,10,16,22,28,15,26,36,44,20,36,52,64,26,48,72,88,36,64,96,112,40,72,108,130,48,88,132,156,60,110,160,192,72,130,192,224,80,150,224,264,96,176,260,308,104,198,288,352,120,216,320,384,132,240,360,432,144,280,408,480,168,308,448,532,180,338,504,588,196,364,546,650,224,416,600,700,224,442,644,750,252,476,690,816,270,504,750,900,300,560,810,960,312,588,870,1050,336,644,952,1110,360,700,1020,1200,390,728,1050,1260,420,784,1140,1350,450,812,1200,1440,480,868,1290,1530,510,924,1350,1620,540,980,1440,1710,570,1036,1530,1800,570,1064,1590,1890,600,1120,1680,1980,630,1204,1770,2100,660,1260,1860,2220,720,1316,1950,2310,750,1372,2040,2430];W2.getBlocksCount=function($,Y){switch(Y){case h.L:return C[($-1)*4+0];case h.M:return C[($-1)*4+1];case h.Q:return C[($-1)*4+2];case h.H:return C[($-1)*4+3];default:return}};W2.getTotalCodewordsCount=function($,Y){switch(Y){case h.L:return u[($-1)*4+0];case h.M:return u[($-1)*4+1];case h.Q:return u[($-1)*4+2];case h.H:return u[($-1)*4+3];default:return}}});var i0=O((H2)=>{var k=new Uint8Array(512),p=new Uint8Array(256);(function(){let $=1;for(let Y=0;Y<255;Y++)if(k[Y]=$,p[$]=Y,$<<=1,$&256)$^=285;for(let Y=255;Y<512;Y++)k[Y]=k[Y-255]})();H2.log=function($){if($<1)throw Error("log("+$+")");return p[$]};H2.exp=function($){return k[$]};H2.mul=function($,Y){if($===0||Y===0)return 0;return k[p[$]+p[Y]]}});var t0=O((R2)=>{var a=i0();R2.mul=function($,Y){let Q=new Uint8Array($.length+Y.length-1);for(let J=0;J<$.length;J++)for(let q=0;q<Y.length;q++)Q[J+q]^=a.mul($[J],Y[q]);return Q};R2.mod=function($,Y){let Q=new Uint8Array($);while(Q.length-Y.length>=0){let J=Q[0];for(let W=0;W<Y.length;W++)Q[W]^=a.mul(Y[W],J);let q=0;while(q<Q.length&&Q[q]===0)q++;Q=Q.slice(q)}return Q};R2.generateECPolynomial=function($){let Y=new Uint8Array([1]);for(let Q=0;Q<$;Q++)Y=R2.mul(Y,new Uint8Array([1,a.exp(Q)]));return Y}});var o0=O((Y9,a0)=>{var r0=t0();function o(Z){if(this.genPoly=void 0,this.degree=Z,this.degree)this.initialize(this.degree)}o.prototype.initialize=function($){this.degree=$,this.genPoly=r0.generateECPolynomial(this.degree)};o.prototype.encode=function($){if(!this.genPoly)throw Error("Encoder not initialized");let Y=new Uint8Array($.length+this.degree);Y.set($);let Q=r0.mod(Y,this.genPoly),J=this.degree-Q.length;if(J>0){let q=new Uint8Array(this.degree);return q.set(Q,J),q}return Q};a0.exports=o});var e=O((A2)=>{A2.isValid=function($){return!isNaN($)&&$>=1&&$<=40}});var $0=O((h2)=>{var x="(?:[u3000-u303F]|[u3040-u309F]|[u30A0-u30FF]|[uFF00-uFFEF]|[u4E00-u9FAF]|[u2605-u2606]|[u2190-u2195]|u203B|[u2010u2015u2018u2019u2025u2026u201Cu201Du2225u2260]|[u0391-u0451]|[u00A7u00A8u00B1u00B4u00D7u00F7])+";x=x.replace(/u/g,"\\u");var N2="(?:(?![A-Z0-9 $%*+\\-./:]|"+x+`)(?:.|[\r
+]))+`;h2.KANJI=new RegExp(x,"g");h2.BYTE_KANJI=new RegExp("[^A-Z0-9 $%*+\\-./:]+","g");h2.BYTE=new RegExp(N2,"g");h2.NUMERIC=new RegExp("[0-9]+","g");h2.ALPHANUMERIC=new RegExp("[A-Z $%*+\\-./:]+","g");var V2=new RegExp("^"+x+"$"),E2=new RegExp("^[0-9]+$"),P2=new RegExp("^[A-Z0-9 $%*+\\-./:]+$");h2.testKanji=function($){return V2.test($)};h2.testNumeric=function($){return E2.test($)};h2.testAlphanumeric=function($){return P2.test($)}});var w=O((x2)=>{var L2=e(),Y0=$0();x2.NUMERIC={id:"Numeric",bit:1,ccBits:[10,12,14]};x2.ALPHANUMERIC={id:"Alphanumeric",bit:2,ccBits:[9,11,13]};x2.BYTE={id:"Byte",bit:4,ccBits:[8,16,16]};x2.KANJI={id:"Kanji",bit:8,ccBits:[8,10,12]};x2.MIXED={bit:-1};x2.getCharCountIndicator=function($,Y){if(!$.ccBits)throw Error("Invalid mode: "+$);if(!L2.isValid(Y))throw Error("Invalid version: "+Y);if(Y>=1&&Y<10)return $.ccBits[0];else if(Y<27)return $.ccBits[1];return $.ccBits[2]};x2.getBestModeForData=function($){if(Y0.testNumeric($))return x2.NUMERIC;else if(Y0.testAlphanumeric($))return x2.ALPHANUMERIC;else if(Y0.testKanji($))return x2.KANJI;else return x2.BYTE};x2.toString=function($){if($&&$.id)return $.id;throw Error("Invalid mode")};x2.isValid=function($){return $&&$.bit&&$.ccBits};function k2(Z){if(typeof Z!=="string")throw Error("Param is not a string");switch(Z.toLowerCase()){case"numeric":return x2.NUMERIC;case"alphanumeric":return x2.ALPHANUMERIC;case"kanji":return x2.KANJI;case"byte":return x2.BYTE;default:throw Error("Unknown mode: "+Z)}}x2.from=function($,Y){if(x2.isValid($))return $;try{return k2($)}catch(Q){return Y}}});var J1=O((m2)=>{var c=P(),u2=r(),$1=g(),y=w(),W0=e(),Y1=c.getBCHDigit(7973);function p2(Z,$,Y){for(let Q=1;Q<=40;Q++)if($<=m2.getCapacity(Q,Y,Z))return Q;return}function Z1(Z,$){return y.getCharCountIndicator(Z,$)+4}function c2(Z,$){let Y=0;return Z.forEach(function(Q){let J=Z1(Q.mode,$);Y+=J+Q.getBitsLength()}),Y}function v2(Z,$){for(let Y=1;Y<=40;Y++)if(c2(Z,Y)<=m2.getCapacity(Y,$,y.MIXED))return Y;return}m2.from=function($,Y){if(W0.isValid($))return parseInt($,10);return Y};m2.getCapacity=function($,Y,Q){if(!W0.isValid($))throw Error("Invalid QR Code version");if(typeof Q>"u")Q=y.BYTE;let J=c.getSymbolTotalCodewords($),q=u2.getTotalCodewordsCount($,Y),W=(J-q)*8;if(Q===y.MIXED)return W;let K=W-Z1(Q,$);switch(Q){case y.NUMERIC:return Math.floor(K/10*3);case y.ALPHANUMERIC:return Math.floor(K/11*2);case y.KANJI:return Math.floor(K/13);case y.BYTE:default:return Math.floor(K/8)}};m2.getBestVersionForData=function($,Y){let Q,J=$1.from(Y,$1.M);if(Array.isArray($)){if($.length>1)return v2($,J);if($.length===0)return 1;Q=$[0]}else Q=$;return p2(Q.mode,Q.getLength(),J)};m2.getEncodedBits=function($){if(!W0.isValid($)||$<7)throw Error("Invalid QR Code version");let Y=$<<12;while(c.getBCHDigit(Y)-Y1>=0)Y^=7973<<c.getBCHDigit(Y)-Y1;return $<<12|Y}});var W1=O((i2)=>{var K0=P(),q1=K0.getBCHDigit(1335);i2.getEncodedBits=function($,Y){let Q=$.bit<<3|Y,J=Q<<10;while(K0.getBCHDigit(J)-q1>=0)J^=1335<<K0.getBCHDigit(J)-q1;return(Q<<10|J)^21522}});var X1=O((K9,K1)=>{var t2=w();function M(Z){this.mode=t2.NUMERIC,this.data=Z.toString()}M.getBitsLength=function($){return 10*Math.floor($/3)+($%3?$%3*3+1:0)};M.prototype.getLength=function(){return this.data.length};M.prototype.getBitsLength=function(){return M.getBitsLength(this.data.length)};M.prototype.write=function($){let Y,Q,J;for(Y=0;Y+3<=this.data.length;Y+=3)Q=this.data.substr(Y,3),J=parseInt(Q,10),$.put(J,10);let q=this.data.length-Y;if(q>0)Q=this.data.substr(Y),J=parseInt(Q,10),$.put(J,q*3+1)};K1.exports=M});var F1=O((X9,H1)=>{var r2=w(),X0=["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"," ","$","%","*","+","-",".","/",":"];function z(Z){this.mode=r2.ALPHANUMERIC,this.data=Z}z.getBitsLength=function($){return 11*Math.floor($/2)+6*($%2)};z.prototype.getLength=function(){return this.data.length};z.prototype.getBitsLength=function(){return z.getBitsLength(this.data.length)};z.prototype.write=function($){let Y;for(Y=0;Y+2<=this.data.length;Y+=2){let Q=X0.indexOf(this.data[Y])*45;Q+=X0.indexOf(this.data[Y+1]),$.put(Q,11)}if(this.data.length%2)$.put(X0.indexOf(this.data[Y]),6)};H1.exports=z});var O1=O((H9,U1)=>{var a2=w();function B(Z){if(this.mode=a2.BYTE,typeof Z==="string")this.data=new TextEncoder().encode(Z);else this.data=new Uint8Array(Z)}B.getBitsLength=function($){return $*8};B.prototype.getLength=function(){return this.data.length};B.prototype.getBitsLength=function(){return B.getBitsLength(this.data.length)};B.prototype.write=function(Z){for(let $=0,Y=this.data.length;$<Y;$++)Z.put(this.data[$],8)};U1.exports=B});var G1=O((F9,R1)=>{var o2=w(),e2=P();function j(Z){this.mode=o2.KANJI,this.data=Z}j.getBitsLength=function($){return $*13};j.prototype.getLength=function(){return this.data.length};j.prototype.getBitsLength=function(){return j.getBitsLength(this.data.length)};j.prototype.write=function(Z){let $;for($=0;$<this.data.length;$++){let Y=e2.toSJIS(this.data[$]);if(Y>=33088&&Y<=40956)Y-=33088;else if(Y>=57408&&Y<=60351)Y-=49472;else throw Error("Invalid SJIS character: "+this.data[$]+`
+Make sure your charset is UTF-8`);Y=(Y>>>8&255)*192+(Y&255),Z.put(Y,13)}};R1.exports=j});var I1=O((U9,H0)=>{var _={single_source_shortest_paths:function(Z,$,Y){var Q={},J={};J[$]=0;var q=_.PriorityQueue.make();q.push($,0);var W,K,X,H,F,G,R,I,V;while(!q.empty()){W=q.pop(),K=W.value,H=W.cost,F=Z[K]||{};for(X in F)if(F.hasOwnProperty(X)){if(G=F[X],R=H+G,I=J[X],V=typeof J[X]>"u",V||I>R)J[X]=R,q.push(X,R),Q[X]=K}}if(typeof Y<"u"&&typeof J[Y]>"u"){var E=["Could not find a path from ",$," to ",Y,"."].join("");throw Error(E)}return Q},extract_shortest_path_from_predecessor_list:function(Z,$){var Y=[],Q=$,J;while(Q)Y.push(Q),J=Z[Q],Q=Z[Q];return Y.reverse(),Y},find_path:function(Z,$,Y){var Q=_.single_source_shortest_paths(Z,$,Y);return _.extract_shortest_path_from_predecessor_list(Q,Y)},PriorityQueue:{make:function(Z){var $=_.PriorityQueue,Y={},Q;Z=Z||{};for(Q in $)if($.hasOwnProperty(Q))Y[Q]=$[Q];return Y.queue=[],Y.sorter=Z.sorter||$.default_sorter,Y},default_sorter:function(Z,$){return Z.cost-$.cost},push:function(Z,$){var Y={value:Z,cost:$};this.queue.push(Y),this.queue.sort(this.sorter)},pop:function(){return this.queue.shift()},empty:function(){return this.queue.length===0}}};if(typeof H0<"u")H0.exports=_});var w1=O((J5)=>{var U=w(),N1=X1(),V1=F1(),E1=O1(),P1=G1(),S=$0(),v=P(),$5=I1();function A1(Z){return unescape(encodeURIComponent(Z)).length}function b(Z,$,Y){let Q=[],J;while((J=Z.exec(Y))!==null)Q.push({data:J[0],index:J.index,mode:$,length:J[0].length});return Q}function h1(Z){let $=b(S.NUMERIC,U.NUMERIC,Z),Y=b(S.ALPHANUMERIC,U.ALPHANUMERIC,Z),Q,J;if(v.isKanjiModeEnabled())Q=b(S.BYTE,U.BYTE,Z),J=b(S.KANJI,U.KANJI,Z);else Q=b(S.BYTE_KANJI,U.BYTE,Z),J=[];return $.concat(Y,Q,J).sort(function(W,K){return W.index-K.index}).map(function(W){return{data:W.data,mode:W.mode,length:W.length}})}function F0(Z,$){switch($){case U.NUMERIC:return N1.getBitsLength(Z);case U.ALPHANUMERIC:return V1.getBitsLength(Z);case U.KANJI:return P1.getBitsLength(Z);case U.BYTE:return E1.getBitsLength(Z)}}function Y5(Z){return Z.reduce(function($,Y){let Q=$.length-1>=0?$[$.length-1]:null;if(Q&&Q.mode===Y.mode)return $[$.length-1].data+=Y.data,$;return $.push(Y),$},[])}function Z5(Z){let $=[];for(let Y=0;Y<Z.length;Y++){let Q=Z[Y];switch(Q.mode){case U.NUMERIC:$.push([Q,{data:Q.data,mode:U.ALPHANUMERIC,length:Q.length},{data:Q.data,mode:U.BYTE,length:Q.length}]);break;case U.ALPHANUMERIC:$.push([Q,{data:Q.data,mode:U.BYTE,length:Q.length}]);break;case U.KANJI:$.push([Q,{data:Q.data,mode:U.BYTE,length:A1(Q.data)}]);break;case U.BYTE:$.push([{data:Q.data,mode:U.BYTE,length:A1(Q.data)}])}}return $}function Q5(Z,$){let Y={},Q={start:{}},J=["start"];for(let q=0;q<Z.length;q++){let W=Z[q],K=[];for(let X=0;X<W.length;X++){let H=W[X],F=""+q+X;K.push(F),Y[F]={node:H,lastCount:0},Q[F]={};for(let G=0;G<J.length;G++){let R=J[G];if(Y[R]&&Y[R].node.mode===H.mode)Q[R][F]=F0(Y[R].lastCount+H.length,H.mode)-F0(Y[R].lastCount,H.mode),Y[R].lastCount+=H.length;else{if(Y[R])Y[R].lastCount=H.length;Q[R][F]=F0(H.length,H.mode)+4+U.getCharCountIndicator(H.mode,$)}}}J=K}for(let q=0;q<J.length;q++)Q[J[q]].end=0;return{map:Q,table:Y}}function T1(Z,$){let Y,Q=U.getBestModeForData(Z);if(Y=U.from($,Q),Y!==U.BYTE&&Y.bit<Q.bit)throw Error('"'+Z+'" cannot be encoded with mode '+U.toString(Y)+`.
+ Suggested mode is: `+U.toString(Q));if(Y===U.KANJI&&!v.isKanjiModeEnabled())Y=U.BYTE;switch(Y){case U.NUMERIC:return new N1(Z);case U.ALPHANUMERIC:return new V1(Z);case U.KANJI:return new P1(Z);case U.BYTE:return new E1(Z)}}J5.fromArray=function($){return $.reduce(function(Y,Q){if(typeof Q==="string")Y.push(T1(Q,null));else if(Q.data)Y.push(T1(Q.data,Q.mode));return Y},[])};J5.fromString=function($,Y){let Q=h1($,v.isKanjiModeEnabled()),J=Z5(Q),q=Q5(J,Y),W=$5.find_path(q.map,"start","end"),K=[];for(let X=1;X<W.length-1;X++)K.push(q.table[W[X]].node);return J5.fromArray(Y5(K))};J5.rawSplit=function($){return J5.fromArray(h1($,v.isKanjiModeEnabled()))}});var y1=O((h5)=>{var l=P(),O0=g(),K5=S0(),X5=g0(),H5=u0(),F5=p0(),I0=d0(),A0=r(),U5=o0(),m=J1(),O5=W1(),R5=w(),R0=w1();function G5(Z,$){let Y=Z.size,Q=F5.getPositions($);for(let J=0;J<Q.length;J++){let q=Q[J][0],W=Q[J][1];for(let K=-1;K<=7;K++){if(q+K<=-1||Y<=q+K)continue;for(let X=-1;X<=7;X++){if(W+X<=-1||Y<=W+X)continue;if(K>=0&&K<=6&&(X===0||X===6)||X>=0&&X<=6&&(K===0||K===6)||K>=2&&K<=4&&X>=2&&X<=4)Z.set(q+K,W+X,!0,!0);else Z.set(q+K,W+X,!1,!0)}}}}function I5(Z){let $=Z.size;for(let Y=8;Y<$-8;Y++){let Q=Y%2===0;Z.set(Y,6,Q,!0),Z.set(6,Y,Q,!0)}}function A5(Z,$){let Y=H5.getPositions($);for(let Q=0;Q<Y.length;Q++){let J=Y[Q][0],q=Y[Q][1];for(let W=-2;W<=2;W++)for(let K=-2;K<=2;K++)if(W===-2||W===2||K===-2||K===2||W===0&&K===0)Z.set(J+W,q+K,!0,!0);else Z.set(J+W,q+K,!1,!0)}}function T5(Z,$){let Y=Z.size,Q=m.getEncodedBits($),J,q,W;for(let K=0;K<18;K++)J=Math.floor(K/3),q=K%3+Y-8-3,W=(Q>>K&1)===1,Z.set(J,q,W,!0),Z.set(q,J,W,!0)}function G0(Z,$,Y){let Q=Z.size,J=O5.getEncodedBits($,Y),q,W;for(q=0;q<15;q++){if(W=(J>>q&1)===1,q<6)Z.set(q,8,W,!0);else if(q<8)Z.set(q+1,8,W,!0);else Z.set(Q-15+q,8,W,!0);if(q<8)Z.set(8,Q-q-1,W,!0);else if(q<9)Z.set(8,15-q-1+1,W,!0);else Z.set(8,15-q-1,W,!0)}Z.set(Q-8,8,1,!0)}function N5(Z,$){let Y=Z.size,Q=-1,J=Y-1,q=7,W=0;for(let K=Y-1;K>0;K-=2){if(K===6)K--;while(!0){for(let X=0;X<2;X++)if(!Z.isReserved(J,K-X)){let H=!1;if(W<$.length)H=($[W]>>>q&1)===1;if(Z.set(J,K-X,H),q--,q===-1)W++,q=7}if(J+=Q,J<0||Y<=J){J-=Q,Q=-Q;break}}}}function V5(Z,$,Y){let Q=new K5;Y.forEach(function(X){Q.put(X.mode.bit,4),Q.put(X.getLength(),R5.getCharCountIndicator(X.mode,Z)),X.write(Q)});let J=l.getSymbolTotalCodewords(Z),q=A0.getTotalCodewordsCount(Z,$),W=(J-q)*8;if(Q.getLengthInBits()+4<=W)Q.put(0,4);while(Q.getLengthInBits()%8!==0)Q.putBit(0);let K=(W-Q.getLengthInBits())/8;for(let X=0;X<K;X++)Q.put(X%2?17:236,8);return E5(Q,Z,$)}function E5(Z,$,Y){let Q=l.getSymbolTotalCodewords($),J=A0.getTotalCodewordsCount($,Y),q=Q-J,W=A0.getBlocksCount($,Y),K=Q%W,X=W-K,H=Math.floor(Q/W),F=Math.floor(q/W),G=F+1,R=H-F,I=new U5(R),V=0,E=Array(W),w0=Array(W),n=0,x1=new Uint8Array(Z.buffer);for(let D=0;D<W;D++){let i=D<X?F:G;E[D]=x1.slice(V,V+i),w0[D]=I.encode(E[D]),V+=i,n=Math.max(n,i)}let d=new Uint8Array(Q),y0=0,T,N;for(T=0;T<n;T++)for(N=0;N<W;N++)if(T<E[N].length)d[y0++]=E[N][T];for(T=0;T<R;T++)for(N=0;N<W;N++)d[y0++]=w0[N][T];return d}function P5(Z,$,Y,Q){let J;if(Array.isArray(Z))J=R0.fromArray(Z);else if(typeof Z==="string"){let H=$;if(!H){let F=R0.rawSplit(Z);H=m.getBestVersionForData(F,Y)}J=R0.fromString(Z,H||40)}else throw Error("Invalid data");let q=m.getBestVersionForData(J,Y);if(!q)throw Error("The amount of data is too big to be stored in a QR Code");if(!$)$=q;else if($<q)throw Error(`
+The chosen QR Code version cannot contain this amount of data.
+Minimum version required to store current data is: `+q+`.
+`);let W=V5($,Y,J),K=l.getSymbolSize($),X=new X5(K);if(G5(X,$),I5(X),A5(X,$),G0(X,Y,0),$>=7)T5(X,$);if(N5(X,W),isNaN(Q))Q=I0.getBestMask(X,G0.bind(null,X,Y));return I0.applyMask(Q,X),G0(X,Y,Q),{modules:X,version:$,errorCorrectionLevel:Y,maskPattern:Q,segments:J}}h5.create=function($,Y){if(typeof $>"u"||$==="")throw Error("No input text");let Q=O0.M,J,q;if(typeof Y<"u"){if(Q=O0.from(Y.errorCorrectionLevel,O0.M),J=m.from(Y.version),q=I0.from(Y.maskPattern),Y.toSJISFunc)l.setToSJISFunction(Y.toSJISFunc)}return P5($,J,Q,q)}});var N0=O((y5)=>{function f1(Z){if(typeof Z==="number")Z=Z.toString();if(typeof Z!=="string")throw Error("Color should be defined as hex string");let $=Z.slice().replace("#","").split("");if($.length<3||$.length===5||$.length>8)throw Error("Invalid hex color: "+Z);if($.length===3||$.length===4)$=Array.prototype.concat.apply([],$.map(function(Q){return[Q,Q]}));if($.length===6)$.push("F","F");let Y=parseInt($.join(""),16);return{r:Y>>24&255,g:Y>>16&255,b:Y>>8&255,a:Y&255,hex:"#"+$.slice(0,6).join("")}}y5.getOptions=function($){if(!$)$={};if(!$.color)$.color={};let Y=typeof $.margin>"u"||$.margin===null||$.margin<0?4:$.margin,Q=$.width&&$.width>=21?$.width:void 0,J=$.scale||4;return{width:Q,scale:Q?4:J,margin:Y,color:{dark:f1($.color.dark||"#000000ff"),light:f1($.color.light||"#ffffffff")},type:$.type,rendererOpts:$.rendererOpts||{}}};y5.getScale=function($,Y){return Y.width&&Y.width>=$+Y.margin*2?Y.width/($+Y.margin*2):Y.scale};y5.getImageWidth=function($,Y){let Q=y5.getScale($,Y);return Math.floor(($+Y.margin*2)*Q)};y5.qrToImageData=function($,Y,Q){let J=Y.modules.size,q=Y.modules.data,W=y5.getScale(J,Q),K=Math.floor((J+Q.margin*2)*W),X=Q.margin*W,H=[Q.color.light,Q.color.dark];for(let F=0;F<K;F++)for(let G=0;G<K;G++){let R=(F*K+G)*4,I=Q.color.light;if(F>=X&&G>=X&&F<K-X&&G<K-X){let V=Math.floor((F-X)/W),E=Math.floor((G-X)/W);I=H[q[V*J+E]?1:0]}$[R++]=I.r,$[R++]=I.g,$[R++]=I.b,$[R]=I.a}}});var M1=O((j5)=>{var V0=N0();function z5(Z,$,Y){if(Z.clearRect(0,0,$.width,$.height),!$.style)$.style={};$.height=Y,$.width=Y,$.style.height=Y+"px",$.style.width=Y+"px"}function B5(){try{return document.createElement("canvas")}catch(Z){throw Error("You need to specify a canvas element")}}j5.render=function($,Y,Q){let J=Q,q=Y;if(typeof J>"u"&&(!Y||!Y.getContext))J=Y,Y=void 0;if(!Y)q=B5();J=V0.getOptions(J);let W=V0.getImageWidth($.modules.size,J),K=q.getContext("2d"),X=K.createImageData(W,W);return V0.qrToImageData(X.data,$,J),z5(K,q,W),K.putImageData(X,0,0),q};j5.renderToDataURL=function($,Y,Q){let J=Q;if(typeof J>"u"&&(!Y||!Y.getContext))J=Y,Y=void 0;if(!J)J={};let q=j5.render($,Y,J),W=J.type||"image/png",K=J.rendererOpts||{};return q.toDataURL(W,K.quality)}});var B1=O((_5)=>{var k5=N0();function z1(Z,$){let Y=Z.a/255,Q=$+'="'+Z.hex+'"';return Y<1?Q+" "+$+'-opacity="'+Y.toFixed(2).slice(1)+'"':Q}function E0(Z,$,Y){let Q=Z+$;if(typeof Y<"u")Q+=" "+Y;return Q}function x5(Z,$,Y){let Q="",J=0,q=!1,W=0;for(let K=0;K<Z.length;K++){let X=Math.floor(K%$),H=Math.floor(K/$);if(!X&&!q)q=!0;if(Z[K]){if(W++,!(K>0&&X>0&&Z[K-1]))Q+=q?E0("M",X+Y,0.5+H+Y):E0("m",J,0),J=0,q=!1;if(!(X+1<$&&Z[K+1]))Q+=E0("h",W),W=0}else J++}return Q}_5.render=function($,Y,Q){let J=k5.getOptions(Y),q=$.modules.size,W=$.modules.data,K=q+J.margin*2,X=!J.color.light.a?"":"<path "+z1(J.color.light,"fill")+' d="M0 0h'+K+"v"+K+'H0z"/>',H="<path "+z1(J.color.dark,"stroke")+' d="'+x5(W,q,J.margin)+'"/>',F='viewBox="0 0 '+K+" "+K+'"',R='<svg xmlns="http://www.w3.org/2000/svg" '+(!J.width?"":'width="'+J.width+'" height="'+J.width+'" ')+F+' shape-rendering="crispEdges">'+X+H+`</svg>
+`;if(typeof Q==="function")Q(null,R);return R}});var L1=O((C5)=>{var b5=M0(),P0=y1(),j1=M1(),g5=B1();function h0(Z,$,Y,Q,J){let q=[].slice.call(arguments,1),W=q.length,K=typeof q[W-1]==="function";if(!K&&!b5())throw Error("Callback required as last argument");if(K){if(W<2)throw Error("Too few arguments provided");if(W===2)J=Y,Y=$,$=Q=void 0;else if(W===3)if($.getContext&&typeof J>"u")J=Q,Q=void 0;else J=Q,Q=Y,Y=$,$=void 0}else{if(W<1)throw Error("Too few arguments provided");if(W===1)Y=$,$=Q=void 0;else if(W===2&&!$.getContext)Q=Y,Y=$,$=void 0;return new Promise(function(X,H){try{let F=P0.create(Y,Q);X(Z(F,$,Q))}catch(F){H(F)}})}try{let X=P0.create(Y,Q);J(null,Z(X,$,Q))}catch(X){J(X)}}C5.create=P0.create;C5.toCanvas=h0.bind(null,j1.render);C5.toDataURL=h0.bind(null,j1.renderToDataURL);C5.toString=h0.bind(null,function(Z,$,Y){return g5.render(Z,Y)})});var k1=C1(L1(),1);window.QRCodeLib=k1.default;
+</script>
+
+<!-- APPLICATION JAVASCRIPT -->
+<script>
+/* ============================================================
+   1. SPEECH SYNTHESIS & IMMERSIVE ACCESSIBILITY READER
+   ============================================================ */
+var ttsOn = true;
+
+function speak(t){
+  if(!ttsOn || !t || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(String(t));
+    u.rate = 0.95; u.pitch = 1; u.lang = 'pt-PT';
+    window.speechSynthesis.speak(u);
+  } catch(e) {}
+}
+
+function isTestQuestionElement(el){
+  if(!el) return false;
+  if(el.getAttribute && el.getAttribute('data-no-speak') === 'true') return true;
+  if(el.closest && el.closest('[data-no-speak="true"], .no-speak, .question-content, #optContainer, #tapStatus, .student-q-wrap')) return true;
+  return false;
+}
+
+function speakTargetText(el){
+  if(!ttsOn || !el) return;
+  if(isTestQuestionElement(el)) return;
+  var t = el.getAttribute('data-speak');
+  if(!t){
+    if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') t = el.placeholder || el.getAttribute('aria-label') || '';
+    else if(el.tagName === 'BUTTON') t = el.textContent;
+    else return;
+  }
+  if(!t) return;
+  var clean = t.trim();
+  if(!clean || clean === 'A aguardar toques...' || clean.indexOf('Toques:') === 0 || /^Opção\s*\d/i.test(clean)) return;
+  speak(clean);
+}
+
+document.addEventListener('focusin', function(e){
+  var el = e.target.closest('button,input,textarea,[data-speak]');
+  if(el) speakTargetText(el);
+});
+
+document.addEventListener('mouseover', function(e){
+  var el = e.target.closest('button,input,[data-speak]');
+  if(el) speakTargetText(el);
+});
+
+var ttsToggleBtn = document.getElementById('ttsToggle');
+ttsToggleBtn.addEventListener('click', function(){
+  ttsOn = !ttsOn;
+  this.textContent = '🔊 Voz: ' + (ttsOn ? 'LIGADA' : 'DESLIGADA');
+  speak('Leitura em voz alta ' + (ttsOn ? 'ligada' : 'desligada'));
+  if(!ttsOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+});
+
+/* ============================================================
+   2. NATIVE WEB AUDIO API TONE FEEDBACK
+   ============================================================ */
+var audioCtx = null;
+function playTone(){
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    if(!audioCtx) audioCtx = new AC();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    var now = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523.25, now);
+    osc.frequency.setValueAtTime(783.99, now + 0.08);
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.28);
+  } catch(e) {}
+}
+
+
+/* ============================================================
+   3. TEACHER STATE & MANAGEMENT
+   ============================================================ */
+var MAXQ = 20, MAXO = 4;
+var questions = [
+  {
+    text: "Qual é a capital de Portugal?",
+    options: ["Porto", "Lisboa", "Coimbra", "Faro"],
+    correct: 1
+  },
+  {
+    text: "Quantos dias tem um ano comum?",
+    options: ["365 dias", "366 dias", "360 dias", "300 dias"],
+    correct: 0
+  },
+  {
+    text: "Qual é o maior oceano do planeta Terra?",
+    options: ["Oceano Atlântico", "Oceano Índico", "Oceano Pacífico", "Oceano Ártico"],
+    correct: 2
+  }
+];
+
+var qWrap = document.getElementById('questions');
+var statusEl = document.getElementById('status');
+
+function setStatus(msg, err){
+  statusEl.textContent = msg;
+  statusEl.className = 'status' + (err ? ' err' : '');
+}
+
+function newQuestion(){
+  return { text: '', options: ['', ''], correct: 0 };
+}
+
+function renderTeacherQuestions(){
+  qWrap.innerHTML = '';
+  questions.forEach(function(q, qi){
+    var card = document.createElement('div'); card.className = 'card';
+    var tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'Pergunta ' + (qi + 1) + ' de ' + questions.length;
+    card.appendChild(tag);
+
+    var lab = document.createElement('label'); lab.setAttribute('for', 'q' + qi); lab.textContent = 'Texto da pergunta ' + (qi + 1);
+    card.appendChild(lab);
+
+    var ta = document.createElement('textarea'); ta.id = 'q' + qi; ta.rows = 2; ta.value = q.text;
+    ta.placeholder = 'Escreva a pergunta ' + (qi + 1);
+    ta.setAttribute('data-speak', 'Campo de texto da pergunta ' + (qi + 1));
+    ta.addEventListener('input', function(){ q.text = ta.value; });
+    card.appendChild(ta);
+
+    var ol = document.createElement('div'); ol.style.marginTop = '18px';
+    var olab = document.createElement('label'); olab.textContent = 'Opções de resposta (marque o botão circular da opção correta):';
+    ol.appendChild(olab);
+
+    q.options.forEach(function(opt, oi){
+      var row = document.createElement('div'); row.className = 'opt';
+      var r = document.createElement('input'); r.type = 'radio'; r.name = 'correct' + qi; r.checked = (q.correct === oi);
+      r.setAttribute('aria-label', 'Marcar a opção ' + (oi + 1) + ' como correta');
+      r.addEventListener('change', function(){
+        q.correct = oi;
+        speak('Opção ' + (oi + 1) + ' marcada como correta');
+      });
+
+      var ti = document.createElement('input'); ti.type = 'text'; ti.value = opt;
+      ti.placeholder = 'Opção ' + (oi + 1);
+      ti.setAttribute('data-speak', 'Campo de texto da opção ' + (oi + 1));
+      ti.addEventListener('input', function(){ q.options[oi] = ti.value; });
+
+      row.appendChild(r); row.appendChild(ti);
+
+      if(q.options.length > 1){
+        var del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = '✕';
+        del.setAttribute('data-speak', 'Remover a opção ' + (oi + 1));
+        del.addEventListener('click', function(){
+          q.options.splice(oi, 1);
+          if(q.correct >= q.options.length) q.correct = q.options.length - 1;
+          renderTeacherQuestions();
+        });
+        row.appendChild(del);
+      }
+      ol.appendChild(row);
+    });
+    card.appendChild(ol);
+
+    var row = document.createElement('div'); row.className = 'row';
+    if(q.options.length < MAXO){
+      var addO = document.createElement('button'); addO.type = 'button'; addO.textContent = '➕ Adicionar opção';
+      addO.setAttribute('data-speak', 'Adicionar uma opção à pergunta ' + (qi + 1));
+      addO.addEventListener('click', function(){ q.options.push(''); renderTeacherQuestions(); });
+      row.appendChild(addO);
+    }
+    var delQ = document.createElement('button'); delQ.type = 'button'; delQ.textContent = '🗑 Eliminar pergunta ' + (qi + 1);
+    delQ.setAttribute('data-speak', 'Eliminar a pergunta ' + (qi + 1));
+    delQ.addEventListener('click', function(){
+      questions.splice(qi, 1);
+      renderTeacherQuestions();
+    });
+    row.appendChild(delQ);
+    card.appendChild(row);
+
+    qWrap.appendChild(card);
+  });
+
+  setStatus(questions.length === 0
+    ? 'Ainda não há perguntas. Adicione a sua primeira pergunta.'
+    : questions.length + (questions.length === 1 ? ' pergunta configurada.' : ' perguntas configuradas.') + ' Pode testar agora ou descarregar.');
+}
+
+document.getElementById('addQ').addEventListener('click', function(){
+  if(questions.length >= MAXQ){ setStatus('Limite máximo de 20 perguntas atingido.', true); speak('Limite máximo de 20 perguntas atingido.'); return; }
+  questions.push(newQuestion());
+  renderTeacherQuestions();
+  var last = qWrap.querySelector('.card:last-child textarea');
+  if(last) last.focus();
+});
+
+function collectQuestions(){
+  var name = (document.getElementById('testName').value || '').trim();
+  if(!name) return { error: 'Escreva primeiro o nome do teste.' };
+  var list = [];
+  for(var i = 0; i < questions.length; i++){
+    var q = questions[i];
+    var text = (q.text || '').trim();
+    var opts = q.options.map(function(o){ return (o || '').trim(); }).filter(function(o){ return o.length > 0; });
+    if(!text || opts.length < 1) continue;
+    var correct = q.correct;
+    var kept = [], correctIdx = 0, c = 0;
+    for(var j = 0; j < q.options.length; j++){
+      var v = (q.options[j] || '').trim();
+      if(v.length > 0){
+        kept.push(v);
+        if(j === correct) correctIdx = c;
+        c++;
+      }
+    }
+    if(correct >= q.options.length || !(q.options[correct] || '').trim()) correctIdx = 0;
+    list.push({ q: text, o: kept, a: correctIdx });
+  }
+  if(list.length === 0) return { error: 'Adicione pelo menos uma pergunta com texto e uma opção válida.' };
+  return { name: name, questions: list };
+}
+
+/* ============================================================
+   4. NAVIGATION & MODE SWITCHING
+   ============================================================ */
+var tabTeacher = document.getElementById('tabTeacher');
+var tabStudent = document.getElementById('tabStudent');
+var teacherSection = document.getElementById('teacherSection');
+var studentSection = document.getElementById('studentSection');
+var currentMode = 'teacher';
+
+function setMode(mode){
+  currentMode = mode;
+  var voiceBtn = document.getElementById('ttsToggle');
+  if(mode === 'teacher'){
+    tabTeacher.className = 'nav-tab active';
+    tabTeacher.setAttribute('aria-selected', 'true');
+    tabStudent.className = 'nav-tab';
+    tabStudent.setAttribute('aria-selected', 'false');
+    teacherSection.className = '';
+    studentSection.className = 'hidden';
+    if(voiceBtn) voiceBtn.style.display = 'inline-block';
+    speak('Modo professor ativado. Pode criar ou editar perguntas.');
+  } else {
+    var res = collectQuestions();
+    if(res.error){
+      setStatus(res.error, true);
+      speak(res.error);
+      return;
+    }
+    tabTeacher.className = 'nav-tab';
+    tabTeacher.setAttribute('aria-selected', 'false');
+    tabStudent.className = 'nav-tab active';
+    tabStudent.setAttribute('aria-selected', 'true');
+    teacherSection.className = 'hidden';
+    studentSection.className = '';
+    if(voiceBtn) voiceBtn.style.display = 'inline-block';
+    startStudentRunner(res.name, res.questions);
+  }
+}
+
+tabTeacher.addEventListener('click', function(){ setMode('teacher'); });
+tabStudent.addEventListener('click', function(){ setMode('student'); });
+document.getElementById('stripTestNow').addEventListener('click', function(){ setMode('student'); });
+
+/* ============================================================
+   5. STUDENT RUNNER LOGIC (INTEGRATED & OFFLINE)
+   ============================================================ */
+var sApp = document.getElementById('studentApp');
+var sTestTitle = '';
+var sQuestions = [];
+var sIdx = 0;
+var sAnswers = [];
+var sStudent = '';
+var sKeyHandler = null;
+
+function startStudentRunner(title, qs){
+  sTestTitle = title;
+  sQuestions = qs;
+  sIdx = 0;
+  sAnswers = [];
+  sStudent = '';
+  if(sKeyHandler){ document.removeEventListener('keydown', sKeyHandler); sKeyHandler = null; }
+  studentNameScreen();
+}
+
+function studentNameScreen(){
+  sApp.innerHTML = '';
+  var h = document.createElement('h1'); h.textContent = sTestTitle; sApp.appendChild(h);
+  var h2 = document.createElement('h2'); h2.textContent = 'Escreva o seu nome para começar'; sApp.appendChild(h2);
+
+  var i = document.createElement('input'); i.type = 'text'; i.placeholder = 'O seu nome completo';
+  i.setAttribute('data-speak', 'Campo de texto: escreva o seu nome');
+  sApp.appendChild(i);
+
+  var b = document.createElement('button'); b.className = 'primary'; b.textContent = '▶ Iniciar teste'; b.style.marginTop = '20px';
+  b.setAttribute('data-speak', 'Iniciar teste');
+  b.onclick = function(){
+    var v = (i.value || '').trim();
+    if(!v){ i.focus(); return; }
+    sStudent = v; sIdx = 0; sAnswers = [];
+    studentQuestionScreen();
+  };
+  sApp.appendChild(b);
+
+  var backBtn = document.createElement('button'); backBtn.type = 'button'; backBtn.textContent = '✏ Voltar ao Modo Professor';
+  backBtn.style.marginTop = '12px';
+  backBtn.setAttribute('data-speak', 'Voltar ao modo professor para editar perguntas');
+  backBtn.onclick = function(){ setMode('teacher'); };
+  sApp.appendChild(backBtn);
+
+  
+  i.focus();
+}
+
+function studentQuestionScreen(){
+  if(sIdx >= sQuestions.length){
+    studentTeacherActionScreen();
+    return;
+  }
+  var q = sQuestions[sIdx];
+  var isLast = (sIdx === sQuestions.length - 1);
+  sApp.innerHTML = '';
+
+  if(window.sTapHandler){ document.removeEventListener('pointerdown', window.sTapHandler); window.sTapHandler = null; }
+  if(window.sTapTimeout){ clearTimeout(window.sTapTimeout); window.sTapTimeout = null; }
+
+  var tag = document.createElement('span'); tag.className = 'tag';
+  tag.textContent = 'Pergunta ' + (sIdx + 1) + ' de ' + sQuestions.length + (isLast ? ' (Última)' : '');
+  tag.setAttribute('data-no-speak', 'true');
+  sApp.appendChild(tag);
+
+  var qWrap = document.createElement('div');
+  qWrap.className = 'student-q-wrap no-speak';
+  qWrap.setAttribute('data-no-speak', 'true');
+
+  var h2 = document.createElement('h2');
+  h2.textContent = q.q;
+  h2.className = 'no-speak';
+  h2.setAttribute('data-no-speak', 'true');
+  qWrap.appendChild(h2);
+
+  var numHint = document.createElement('p');
+  numHint.className = 'lead no-speak';
+  numHint.textContent = 'Toque de 1 a ' + q.o.length + ' vezes no ecrã para responder. 6 toques para rever desde a Pergunta 1. 7 toques para manter a resposta anterior. Bloqueio ao fim de 3 segundos.';
+  numHint.setAttribute('data-no-speak', 'true');
+  qWrap.appendChild(numHint);
+
+  var optContainer = document.createElement('div');
+  optContainer.id = 'optContainer';
+  optContainer.className = 'no-speak';
+  optContainer.setAttribute('data-no-speak', 'true');
+  optContainer.style.marginTop = '20px';
+  q.o.forEach(function(o, oi){
+    var p = document.createElement('p');
+    p.className = 'no-speak';
+    p.setAttribute('data-no-speak', 'true');
+    p.style.fontSize = '1.4rem';
+    p.style.margin = '12px 0';
+    var isCurrent = (sAnswers[sIdx] === oi);
+    p.innerHTML = '<strong>Opção ' + (oi + 1) + '.</strong> ' + esc(o) + (isCurrent ? ' <span style="color:var(--success);font-weight:700;">(Resposta guardada)</span>' : '');
+    optContainer.appendChild(p);
+  });
+  qWrap.appendChild(optContainer);
+
+  var tapStatus = document.createElement('div');
+  tapStatus.id = 'tapStatus';
+  tapStatus.className = 'no-speak';
+  tapStatus.setAttribute('data-no-speak', 'true');
+  tapStatus.style.fontSize = '2.2rem';
+  tapStatus.style.fontWeight = 'bold';
+  tapStatus.style.color = 'var(--accent)';
+  tapStatus.style.marginTop = '30px';
+  tapStatus.style.textAlign = 'center';
+  tapStatus.style.padding = '30px 20px';
+  tapStatus.style.border = '4px dashed #333';
+  tapStatus.style.borderRadius = '14px';
+  if(sAnswers[sIdx] !== undefined){
+    tapStatus.textContent = 'Resposta guardada: Opção ' + (sAnswers[sIdx] + 1) + ' (7 toques para manter, 6 para rever)';
+  } else {
+    tapStatus.textContent = 'A aguardar toques...';
+  }
+  qWrap.appendChild(tapStatus);
+
+  sApp.appendChild(qWrap);
+
+  var tapCount = 0;
+  var advancing = false;
+
+  window.sTapHandler = function(e){
+    if(e.target.tagName === 'BUTTON') return;
+    if(advancing) return;
+    
+    tapCount++;
+    if(tapCount > 7) tapCount = 1;
+    
+    if(tapCount <= q.o.length){
+      tapStatus.textContent = 'Toques: ' + tapCount;
+    } else if(tapCount === 6){
+      tapStatus.textContent = 'Toques: 6 (Revisão: Voltar à Pergunta 1)';
+    } else if(tapCount === 7){
+      tapStatus.textContent = (sAnswers[sIdx] !== undefined)
+        ? ('Toques: 7 (Manter Opção ' + (sAnswers[sIdx] + 1) + ' e avançar)')
+        : 'Toques: 7 (Manter resposta anterior e avançar)';
+    } else {
+      tapStatus.textContent = 'Toques: ' + tapCount + ' (Opções: 1-' + q.o.length + ', 6=Revisão, 7=Manter)';
+    }
+    tapStatus.style.borderColor = 'var(--accent)';
+    
+    if(window.sTapTimeout) clearTimeout(window.sTapTimeout);
+    window.sTapTimeout = setTimeout(function(){
+      if(tapCount > q.o.length && tapCount < 6){
+        tapStatus.textContent = 'Toques inválidos (' + tapCount + '). Toque 1 a ' + q.o.length + ', 6 para rever ou 7 para manter.';
+        tapCount = 0;
+        return;
+      }
+      
+      advancing = true;
+      document.removeEventListener('pointerdown', window.sTapHandler);
+      window.sTapHandler = null;
+      
+      if(tapCount === 6){
+        // 6 toques: Voltar à primeira pergunta para revisão de respostas
+        tapStatus.textContent = 'Bloqueado';
+        tapStatus.style.color = 'var(--accent)';
+        tapStatus.style.borderColor = 'var(--accent)';
+        playTone();
+        speak('Bloqueado');
+        setTimeout(function(){
+          sIdx = 0;
+          studentQuestionScreen();
+        }, 1500);
+      } else if(tapCount === 7){
+        // 7 toques: Manter resposta anterior desta pergunta e avançar
+        tapStatus.textContent = 'Bloqueado';
+        tapStatus.style.color = 'var(--success)';
+        tapStatus.style.borderColor = 'var(--success)';
+        playTone();
+        speak('Bloqueado');
+        setTimeout(function(){
+          sIdx++;
+          if(sIdx < sQuestions.length) studentQuestionScreen();
+          else studentTeacherActionScreen();
+        }, 1500);
+      } else {
+        // 1 a q.o.length toques: Selecionar ou alterar opção
+        var oi = tapCount - 1;
+        sAnswers[sIdx] = oi;
+        tapStatus.textContent = 'Bloqueado';
+        tapStatus.style.color = 'var(--success)';
+        tapStatus.style.borderColor = 'var(--success)';
+        playTone();
+        speak('Bloqueado');
+        setTimeout(function(){
+          sIdx++;
+          if(sIdx < sQuestions.length) studentQuestionScreen();
+          else studentTeacherActionScreen();
+        }, 1500);
+      }
+    }, 3000);
+  };
+  
+  sApp.style.flexGrow = '1';
+  document.addEventListener('pointerdown', window.sTapHandler);
+
+  if(sKeyHandler) document.removeEventListener('keydown', sKeyHandler);
+  sKeyHandler = function(e){
+    if(document.activeElement && document.activeElement.tagName === 'INPUT') return;
+    var n = parseInt(e.key, 10);
+    if(advancing) return;
+
+    if(!isNaN(n) && n >= 1 && n <= q.o.length){
+      advancing = true;
+      document.removeEventListener('keydown', sKeyHandler);
+      sKeyHandler = null;
+      if(window.sTapHandler){ document.removeEventListener('pointerdown', window.sTapHandler); window.sTapHandler = null; }
+      if(window.sTapTimeout){ clearTimeout(window.sTapTimeout); window.sTapTimeout = null; }
+      
+      var oi = n - 1;
+      sAnswers[sIdx] = oi;
+      tapStatus.textContent = 'Bloqueado';
+      tapStatus.style.color = 'var(--success)';
+      tapStatus.style.borderColor = 'var(--success)';
+      playTone();
+      speak('Bloqueado');
+      setTimeout(function(){
+        sIdx++;
+        if(sIdx < sQuestions.length) studentQuestionScreen();
+        else studentTeacherActionScreen();
+      }, 1500);
+    } else if(n === 6){
+      // Tecla 6: Voltar à primeira pergunta para revisão
+      advancing = true;
+      document.removeEventListener('keydown', sKeyHandler);
+      sKeyHandler = null;
+      if(window.sTapHandler){ document.removeEventListener('pointerdown', window.sTapHandler); window.sTapHandler = null; }
+      if(window.sTapTimeout){ clearTimeout(window.sTapTimeout); window.sTapTimeout = null; }
+      
+      tapStatus.textContent = 'Bloqueado';
+      tapStatus.style.color = 'var(--accent)';
+      tapStatus.style.borderColor = 'var(--accent)';
+      playTone();
+      speak('Bloqueado');
+      setTimeout(function(){
+        sIdx = 0;
+        studentQuestionScreen();
+      }, 1500);
+    } else if(n === 7){
+      // Tecla 7: Manter resposta anterior desta pergunta e avançar
+      advancing = true;
+      document.removeEventListener('keydown', sKeyHandler);
+      sKeyHandler = null;
+      if(window.sTapHandler){ document.removeEventListener('pointerdown', window.sTapHandler); window.sTapHandler = null; }
+      if(window.sTapTimeout){ clearTimeout(window.sTapTimeout); window.sTapTimeout = null; }
+      
+      tapStatus.textContent = 'Bloqueado';
+      tapStatus.style.color = 'var(--success)';
+      tapStatus.style.borderColor = 'var(--success)';
+      playTone();
+      speak('Bloqueado');
+      setTimeout(function(){
+        sIdx++;
+        if(sIdx < sQuestions.length) studentQuestionScreen();
+        else studentTeacherActionScreen();
+      }, 1500);
+    }
+  };
+  document.addEventListener('keydown', sKeyHandler);
+
+  if(sIdx > 0){
+    var back = document.createElement('button'); back.type = 'button'; back.textContent = '← Anterior';
+    back.setAttribute('data-speak', 'Voltar à pergunta anterior');
+    back.style.marginTop = '30px';
+    back.onclick = function(e){
+      e.stopPropagation();
+      if(window.sTapHandler){ document.removeEventListener('pointerdown', window.sTapHandler); window.sTapHandler = null; }
+      if(window.sTapTimeout){ clearTimeout(window.sTapTimeout); window.sTapTimeout = null; }
+      if(sKeyHandler){ document.removeEventListener('keydown', sKeyHandler); sKeyHandler = null; }
+      sIdx--; studentQuestionScreen();
+    };
+    sApp.appendChild(back);
+  }
+
+  if(isLast){
+    var teachBtn = document.createElement('button'); teachBtn.type = 'button'; teachBtn.className = 'primary'; teachBtn.style.marginTop = '20px';
+    teachBtn.textContent = '📱 Professor: Concluir';
+    teachBtn.setAttribute('data-speak', 'Professor: Concluir teste e ver resultados');
+    teachBtn.onclick = function(e){
+      e.stopPropagation();
+      if(window.sTapHandler){ document.removeEventListener('pointerdown', window.sTapHandler); window.sTapHandler = null; }
+      if(window.sTapTimeout){ clearTimeout(window.sTapTimeout); window.sTapTimeout = null; }
+      if(sKeyHandler){ document.removeEventListener('keydown', sKeyHandler); sKeyHandler = null; }
+      studentTeacherActionScreen();
+    };
+    sApp.appendChild(teachBtn);
+  }
+}
+
+function studentTeacherActionScreen(){
+  if(sKeyHandler){ document.removeEventListener('keydown', sKeyHandler); sKeyHandler = null; }
+  sApp.innerHTML = '';
+  var tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'Fim do Teste'; sApp.appendChild(tag);
+  var h1 = document.createElement('h1'); h1.textContent = 'Perguntas Concluídas!'; sApp.appendChild(h1);
+  var h2 = document.createElement('h2'); h2.textContent = sStudent + ' — ' + sTestTitle; sApp.appendChild(h2);
+
+  var card = document.createElement('div'); card.className = 'card-box';
+  var p1 = document.createElement('p'); p1.style.fontSize = '1.25rem'; p1.style.fontWeight = '700';
+  p1.textContent = 'Todas as perguntas foram respondidas pelo aluno.'; card.appendChild(p1);
+
+  var p2 = document.createElement('p'); p2.className = 'lead';
+  p2.textContent = 'Entregue o dispositivo ao professor. Clique no botão abaixo para gerar o código QR com a nota e a lista de perguntas erradas.'; card.appendChild(p2);
+
+  var genBtn = document.createElement('button'); genBtn.type = 'button'; genBtn.className = 'primary';
+  genBtn.textContent = '📱 Professor: Gerar Código QR com Correção';
+  genBtn.setAttribute('data-speak', 'Professor: Clique para gerar o código QR com os resultados e perguntas erradas');
+  genBtn.onclick = function(){ studentFinishScreen(); };
+  card.appendChild(genBtn);
+  sApp.appendChild(card);
+
+  if(sQuestions.length > 0){
+    var revBtn = document.createElement('button'); revBtn.type = 'button'; revBtn.textContent = '← Rever última pergunta';
+    revBtn.setAttribute('data-speak', 'Voltar para rever a última pergunta');
+    revBtn.onclick = function(){
+      if(window.sTeacherTapHandler){ document.removeEventListener('pointerdown', window.sTeacherTapHandler); window.sTeacherTapHandler = null; }
+      sIdx = sQuestions.length - 1; studentQuestionScreen();
+    };
+    sApp.appendChild(revBtn);
+
+    var revFirstBtn = document.createElement('button'); revFirstBtn.type = 'button';
+    revFirstBtn.style.marginTop = '12px';
+    revFirstBtn.textContent = '🔄 Rever desde a Pergunta 1 (ou dê 6 toques no ecrã)';
+    revFirstBtn.setAttribute('data-speak', 'Rever perguntas desde a primeira pergunta para alterar respostas se necessário');
+    revFirstBtn.onclick = function(){
+      if(window.sTeacherTapHandler){ document.removeEventListener('pointerdown', window.sTeacherTapHandler); window.sTeacherTapHandler = null; }
+      sIdx = 0; studentQuestionScreen();
+    };
+    sApp.appendChild(revFirstBtn);
+  }
+
+  var teacherTapCount = 0;
+  var teacherTapTimeout = null;
+  if(window.sTeacherTapHandler){ document.removeEventListener('pointerdown', window.sTeacherTapHandler); window.sTeacherTapHandler = null; }
+  window.sTeacherTapHandler = function(e){
+    if(e.target.tagName === 'BUTTON') return;
+    teacherTapCount++;
+    if(teacherTapTimeout) clearTimeout(teacherTapTimeout);
+    teacherTapTimeout = setTimeout(function(){
+      if(teacherTapCount === 6){
+        document.removeEventListener('pointerdown', window.sTeacherTapHandler);
+        window.sTeacherTapHandler = null;
+        sIdx = 0;
+        studentQuestionScreen();
+      }
+      teacherTapCount = 0;
+    }, 2000);
+  };
+  document.addEventListener('pointerdown', window.sTeacherTapHandler);
+
+  playTone();
+}
+
+function studentFinishScreen(){
+  if(window.sTeacherTapHandler){ document.removeEventListener('pointerdown', window.sTeacherTapHandler); window.sTeacherTapHandler = null; }
+  if(sKeyHandler){ document.removeEventListener('keydown', sKeyHandler); sKeyHandler = null; }
+  var total = sQuestions.length, score = 0, wrongs = [], details = [];
+  for(var i = 0; i < total; i++){
+    var q = sQuestions[i];
+    var a = sAnswers[i];
+    var isRight = (a === q.a);
+    if(isRight){
+      score++;
+      details.push('P' + (i + 1) + ': CORRETA (Opção ' + (q.a + 1) + ')');
+    } else {
+      var uText = (a !== undefined && q.o[a]) ? q.o[a] : 'Sem resposta';
+      var cText = q.o[q.a] || '';
+      var uNum = (a !== undefined) ? (a + 1) : '-';
+      wrongs.push({
+        num: i + 1,
+        qText: q.q,
+        uNum: uNum,
+        uText: uText,
+        cNum: q.a + 1,
+        cText: cText
+      });
+      details.push('P' + (i + 1) + ': ERRADA (Aluno: [' + uNum + '] (' + uText + ') | Correta: [' + (q.a + 1) + '] (' + cText + '))');
+    }
+  }
+
+  var pct = Math.round(score / total * 1000) / 10;
+  sApp.innerHTML = '';
+  var h1 = document.createElement('h1'); h1.textContent = 'Resultado do Teste'; sApp.appendChild(h1);
+  var h2 = document.createElement('h2'); h2.textContent = sStudent + ' — ' + sTestTitle; sApp.appendChild(h2);
+
+  var s = document.createElement('div'); s.className = 'score';
+  s.textContent = score + ' / ' + total + ' (' + pct.toFixed(1) + '%)'; sApp.appendChild(s);
+
+  if(wrongs.length === 0){
+    var ok = document.createElement('div'); ok.className = 'ok-box';
+    ok.textContent = '✓ Parabéns! Todas as ' + total + ' perguntas estão corretas (0 erros).';
+    sApp.appendChild(ok);
+  } else {
+    var errBox = document.createElement('div'); errBox.className = 'card-box';
+    var errTitle = document.createElement('h3'); errTitle.style.color = 'var(--accent)'; errTitle.style.margin = '0 0 12px';
+    errTitle.textContent = '⚠ Perguntas que o aluno errou (' + wrongs.length + ' de ' + total + '):';
+    errBox.appendChild(errTitle);
+
+    wrongs.forEach(function(w){
+      var item = document.createElement('div'); item.className = 'err-item';
+      item.innerHTML = '<strong>Pergunta ' + w.num + ':</strong> ' + esc(w.qText) + '<br>' +
+        '<span style="color:var(--accent);font-weight:700">Aluno escolheu:</span> [' + w.uNum + '] ' + esc(w.uText) + '<br>' +
+        '<span style="color:var(--success);font-weight:700">Opção correta:</span> [' + w.cNum + '] ' + esc(w.cText);
+      errBox.appendChild(item);
+    });
+    sApp.appendChild(errBox);
+  }
+
+  var c = document.createElement('div'); c.className = 'center';
+  var box = document.createElement('div'); box.className = 'qr';
+  var cv = document.createElement('canvas'); box.appendChild(cv); c.appendChild(box); sApp.appendChild(c);
+
+  var wrongSummary = wrongs.length === 0 ? 'TODAS CORRETAS (0 erros)' :
+    (wrongs.length + ' ERRO(S):\n' + wrongs.map(function(w){
+      return '• P' + w.num + ': Escolheu [' + w.uNum + '] (' + w.uText + ') | Correta era [' + w.cNum + '] (' + w.cText + ')';
+    }).join('\n'));
+
+  var payload = 'ALUNO: ' + sStudent + '\n' +
+    'TESTE: ' + sTestTitle + '\n' +
+    'PONTUAÇÃO: ' + score + '/' + total + ' (' + pct.toFixed(1) + '%)\n' +
+    'STATUS: ' + (wrongs.length === 0 ? 'SEM ERROS' : wrongs.length + ' ERROS') + '\n' +
+    'DETALHES:\n' + wrongSummary + '\n' +
+    'RESUMO: ' + details.join(' | ');
+
+  try {
+    window.QRCodeLib.toCanvas(cv, payload, { width: 280, margin: 1, errorCorrectionLevel: 'M' });
+  } catch(e) {
+    var p = document.createElement('p'); p.textContent = 'Erro ao gerar QR: ' + e.message; sApp.appendChild(p);
+  }
+
+  var raw = document.createElement('div'); raw.className = 'raw-payload';
+  raw.textContent = 'Texto embutido no Código QR:\n\n' + payload;
+  sApp.appendChild(raw);
+
+  var copyBtn = document.createElement('button'); copyBtn.type = 'button'; copyBtn.style.marginTop = '12px';
+  copyBtn.textContent = '📋 Copiar Texto do Código QR';
+  copyBtn.setAttribute('data-speak', 'Copiar o texto do código QR para a área de transferência');
+  copyBtn.onclick = function(){
+    try {
+      navigator.clipboard.writeText(payload).then(function(){
+        copyBtn.textContent = '✓ Texto Copiado com Sucesso!';
+        speak('Texto do código QR copiado com sucesso.');
+        setTimeout(function(){ copyBtn.textContent = '📋 Copiar Texto do Código QR'; }, 2500);
+      });
+    } catch(err) {
+      alert('Selecione e copie o texto acima manualmente.');
+    }
+  };
+  sApp.appendChild(copyBtn);
+
+  var again = document.createElement('button'); again.className = 'primary'; again.style.marginTop = '16px';
+  again.textContent = '🔄 Começar de novo (Novo Aluno)'; again.onclick = studentNameScreen;
+  again.setAttribute('data-speak', 'Recomeçar o teste com outro aluno');
+  sApp.appendChild(again);
+
+  var backEditor = document.createElement('button'); backEditor.type = 'button'; backEditor.style.marginTop = '12px';
+  backEditor.textContent = '✏ Voltar ao Modo Professor';
+  backEditor.setAttribute('data-speak', 'Voltar ao modo professor');
+  backEditor.onclick = function(){ setMode('teacher'); };
+  sApp.appendChild(backEditor);
+
+  var spokenText = 'Teste corrigido. ' + sStudent + ' obteve ' + score + ' de ' + total + ', ' + pct.toFixed(1) + ' por cento. ' +
+    (wrongs.length > 0 ? (wrongs.length + ' perguntas erradas.') : 'Nenhuma pergunta errada.') + ' Está no ecrã o código QR com os detalhes completos.';
+  // Result speech disabled to avoid classroom disruption
+}
+
+function esc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+/* ============================================================
+   6. FILE DOWNLOADS (SELF INDEX.HTML, STUDENT HTML, JSON)
+   ============================================================ */
+/* A. Download standalone index.html itself */
+document.getElementById('stripDownloadSelf').addEventListener('click', function(){
+  var selfContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  var blob = new Blob([selfContent], { type: 'text/html;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = 'index.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  setStatus('Aplicação descarregada como index.html! Pode guardar numa pen USB e abrir diretamente sem internet.');
+  speak('Aplicação descarregada com sucesso. Pode usá-la offline abrindo o ficheiro index.html.');
+});
+
+/* B. Download student standalone HTML */
+document.getElementById('genStudentFile').addEventListener('click', function(){
+  var res = collectQuestions();
+  if(res.error){ setStatus(res.error, true); speak(res.error); return; }
+  var qrlib = document.getElementById('qrlib').textContent;
+  var html = buildStudentOnlyHtml(res.name, res.questions, qrlib);
+  var safe = res.name.replace(/[^a-z0-9\-_ ]/gi, '').replace(/\s+/g, '_') || 'Teste';
+  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = safe + '.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  var msg = 'Descarregado ' + safe + '.html com ' + res.questions.length + (res.questions.length === 1 ? ' pergunta.' : ' perguntas.') + ' O teste funciona 100% offline.';
+  setStatus(msg); speak(msg);
+});
+
+/* C. Export JSON */
+document.getElementById('exportJson').addEventListener('click', function(){
+  var res = collectQuestions();
+  if(res.error){ setStatus(res.error, true); speak(res.error); return; }
+  var jsonStr = JSON.stringify(res, null, 2);
+  var safe = res.name.replace(/[^a-z0-9\-_ ]/gi, '').replace(/\s+/g, '_') || 'perguntas';
+  var blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = safe + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  setStatus('Ficheiro JSON de perguntas exportado com sucesso.');
+  speak('Ficheiro JSON exportado com sucesso.');
+});
+
+/* D. Import JSON/HTML */
+var importFileInput = document.getElementById('importFileInput');
+document.getElementById('importJsonBtn').addEventListener('click', function(){
+  importFileInput.click();
+});
+importFileInput.addEventListener('change', function(e){
+  var file = e.target.files && e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(evt){
+    try {
+      var content = evt.target.result;
+      if(file.name.endsWith('.json')){
+        var data = JSON.parse(content);
+        if(data.name) document.getElementById('testName').value = data.name;
+        if(Array.isArray(data.questions)){
+          questions = data.questions.map(function(item){
+            return {
+              text: item.q || item.text || '',
+              options: Array.isArray(item.o || item.options) ? (item.o || item.options) : ['', ''],
+              correct: typeof item.a === 'number' ? item.a : (item.correct || 0)
+            };
+          });
+          renderTeacherQuestions();
+          setStatus('Teste "' + (data.name || file.name) + '" carregado com ' + questions.length + ' perguntas.');
+          speak('Teste carregado com sucesso.');
+        }
+      } else {
+        /* If HTML, try to extract window.TEST */
+        var match = content.match(/window\.TEST\s*=\s*({[\s\S]*?});/);
+        if(match){
+          var tData = JSON.parse(match[1]);
+          if(tData.t) document.getElementById('testName').value = tData.t;
+          if(Array.isArray(tData.q)){
+            questions = tData.q.map(function(item){
+              return {
+                text: item.q || '',
+                options: item.o || ['', ''],
+                correct: item.a || 0
+              };
+            });
+            renderTeacherQuestions();
+            setStatus('Teste "' + (tData.t || file.name) + '" importado do HTML com sucesso.');
+            speak('Teste importado do ficheiro HTML.');
+          }
+        } else {
+          alert('Não foi possível encontrar dados de teste válidos no ficheiro HTML.');
+        }
+      }
+    } catch(err) {
+      alert('Erro ao carregar ficheiro: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+});
+
+/* E. Build Standalone Student HTML helper */
+function buildStudentOnlyHtml(testName, qs, qrlib){
+  var data = JSON.stringify({ t: testName, q: qs }).replace(/</g, '\\u003c');
+  var S = '<' + '/script>';
+  return '<!DOCTYPE html>\n<html lang="pt-PT">\n<head>\n<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>' + esc(testName) + '<' + '/title>\n<style>' + STUDENT_FILE_CSS + '<' + '/style>\n</head>\n<body>\n' +
+    '<div class="wrap">\n' +
+    '  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">\n' +
+    '    <button type="button" id="ttsToggle" style="width:auto;min-height:50px;padding:8px 20px;font-size:1.1rem;margin:0" data-speak="Ligar ou desligar leitura em voz alta">🔊 Voz: LIGADA</button>\n' +
+    '  </div>\n' +
+    '  <div id="app"></div>\n' +
+    '</div>\n' +
+    '<script>window.TEST=' + data + ';' + S + '\n' +
+    '<script>' + qrlib + S + '\n' +
+    '<script>' + STUDENT_FILE_JS + S + '\n</body>\n</html>\n';
+}
+
+var STUDENT_FILE_CSS = [
+':root{--bg:#000;--fg:#FFF;--accent:#FF3333;--success:#00FF66}',
+'*{box-sizing:border-box}html,body{margin:0;padding:0}',
+'body{background:var(--bg);color:var(--fg);font-family:"Segoe UI",Tahoma,Verdana,sans-serif;font-size:22px;line-height:1.5;padding:20px}',
+'.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;min-height:90vh}',
+'h1{color:var(--accent);font-size:2.1rem;text-transform:uppercase;margin:0 0 10px}',
+'h2{font-size:1.6rem;margin:0 0 18px}',
+'p.lead{margin:0 0 18px;opacity:.9}',
+'input[type=text]{width:100%;background:#000;color:#FFF;border:4px solid #FFF;border-radius:14px;padding:18px;font-size:1.2rem;font-family:inherit}',
+'input[type=text]:focus{outline:6px solid var(--accent);border-color:var(--accent)}',
+'button{background:#000;color:#FFF;border:4px solid #FFF;border-radius:14px;padding:20px 22px;font-size:1.2rem;font-weight:800;font-family:inherit;cursor:pointer;min-height:76px;width:100%;text-align:left;margin:0 0 16px}',
+'button:hover,button:focus{background:var(--accent);color:#000;border-color:var(--accent);outline:none}',
+'button.selected{background:var(--accent);color:#000;border-color:var(--accent)}',
+'button.primary{background:var(--accent);color:#000;border-color:var(--accent);text-align:center}',
+'button.primary:hover,button.primary:focus{background:#fff;border-color:#fff}',
+'.tag{display:inline-block;border:3px solid #FFF;border-radius:999px;padding:4px 16px;font-size:1rem;margin-bottom:14px}',
+'.score{font-size:2.4rem;font-weight:900;color:var(--accent);border:4px solid var(--accent);border-radius:14px;padding:20px;text-align:center;margin:0 0 24px}',
+'.qr{background:#FFF;padding:16px;border-radius:14px;display:inline-block;margin:12px 0}',
+'.center{text-align:center}',
+'.num-bar{display:flex;gap:12px;margin:0 0 18px}',
+'.num-btn{flex:1;text-align:center;font-size:1.7rem;font-weight:900;padding:14px 0;min-height:68px;margin:0}',
+'.num-badge{display:inline-block;background:var(--accent);color:#000;font-weight:900;padding:2px 14px;border-radius:8px;margin-right:12px}',
+'.card-box{border:4px solid var(--accent);border-radius:14px;padding:20px;margin:0 0 20px;background:#000}',
+'.err-item{border-left:6px solid var(--accent);background:#111;padding:12px 16px;margin:0 0 12px;border-radius:0 10px 10px 0;font-size:1.05rem}',
+'.opt-grid{display:flex;flex-direction:column;gap:16px;margin:20px 0;flex-grow:1}',
+'.opt-btn{flex:1;min-height:15vh;font-size:1.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}',
+'.opt-btn .num-badge{font-size:2.2rem;margin:0 0 12px 0;padding:8px 32px;border-radius:12px}',
+'.opt-btn span{font-weight:700;line-height:1.3}',
+
+'.ok-box{border:4px solid var(--success);color:var(--success);border-radius:14px;padding:16px;margin:0 0 20px;font-weight:700;font-size:1.2rem;text-align:center}',
+'.raw-payload{background:#111;border:2px solid #555;border-radius:10px;padding:12px;font-family:monospace;font-size:.85rem;white-space:pre-wrap;word-break:break-word;text-align:left;max-height:220px;overflow-y:auto;margin-top:14px}'
+].join('\n');
+
+var STUDENT_FILE_JS = [
+  "var T=window.TEST, app=document.getElementById(\"app\"), idx=0, answers=[], student=\"\", audioCtx=null, ttsOn=true;",
+  "function speak(t){",
+  "  if(!ttsOn || !t || !(\"speechSynthesis\" in window)) return;",
+  "  try{",
+  "    window.speechSynthesis.cancel();",
+  "    var u = new SpeechSynthesisUtterance(String(t));",
+  "    u.rate = 0.95; u.pitch = 1; u.lang = \"pt-PT\";",
+  "    window.speechSynthesis.speak(u);",
+  "  }catch(e){}",
+  "}",
+  "function isTestQuestionElement(el){",
+  "  if(!el) return false;",
+  "  if(el.getAttribute && el.getAttribute(\"data-no-speak\") === \"true\") return true;",
+  "  if(el.closest && el.closest('[data-no-speak=\"true\"], .no-speak, .question-content, #optContainer, #tapStatus, .student-q-wrap')) return true;",
+  "  return false;",
+  "}",
+  "function speakTargetText(el){",
+  "  if(!ttsOn || !el) return;",
+  "  if(isTestQuestionElement(el)) return;",
+  "  var t = el.getAttribute(\"data-speak\");",
+  "  if(!t){",
+  "    if(el.tagName === \"INPUT\" || el.tagName === \"TEXTAREA\") t = el.placeholder || el.getAttribute(\"aria-label\") || \"\";",
+  "    else if(el.tagName === \"BUTTON\") t = el.textContent;",
+  "    else return;",
+  "  }",
+  "  if(!t) return;",
+  "  var clean = t.trim();",
+  "  if(!clean || clean === \"A aguardar toques...\" || clean.indexOf(\"Toques:\") === 0 || /^Opção\\s*\\d/i.test(clean)) return;",
+  "  speak(clean);",
+  "}",
+  "document.addEventListener(\"focusin\", function(e){",
+  "  var el = e.target.closest(\"button,input,textarea,[data-speak]\");",
+  "  if(el) speakTargetText(el);",
+  "});",
+  "document.addEventListener(\"mouseover\", function(e){",
+  "  var el = e.target.closest(\"button,input,[data-speak]\");",
+  "  if(el) speakTargetText(el);",
+  "});",
+  "var voiceToggleBtn = document.getElementById(\"ttsToggle\");",
+  "if(voiceToggleBtn){",
+  "  voiceToggleBtn.addEventListener(\"click\", function(){",
+  "    ttsOn = !ttsOn;",
+  "    this.textContent = \"🔊 Voz: \" + (ttsOn ? \"LIGADA\" : \"DESLIGADA\");",
+  "    speak(\"Leitura em voz alta \" + (ttsOn ? \"ligada\" : \"desligada\"));",
+  "    if(!ttsOn && \"speechSynthesis\" in window) window.speechSynthesis.cancel();",
+  "  });",
+  "}",
+  "function playTone(){",
+  "  try{",
+  "    var AC=window.AudioContext||window.webkitAudioContext;",
+  "    if(!AC) return;",
+  "    if(!audioCtx) audioCtx=new AC();",
+  "    if(audioCtx.state===\"suspended\") audioCtx.resume();",
+  "    var now=audioCtx.currentTime;",
+  "    var osc=audioCtx.createOscillator();",
+  "    var gain=audioCtx.createGain();",
+  "    osc.type=\"sine\";",
+  "    osc.frequency.setValueAtTime(523.25, now);",
+  "    osc.frequency.setValueAtTime(783.99, now + 0.08);",
+  "    gain.gain.setValueAtTime(0.25, now);",
+  "    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);",
+  "    osc.connect(gain);",
+  "    gain.connect(audioCtx.destination);",
+  "    osc.start(now);",
+  "    osc.stop(now + 0.28);",
+  "  }catch(e){}",
+  "}",
+  "function nameScreen(){",
+  "  app.innerHTML=\"\";",
+  "  var h=document.createElement(\"h1\"); h.textContent=T.t; app.appendChild(h);",
+  "  var h2=document.createElement(\"h2\"); h2.textContent=\"Escreva o seu nome para começar\"; app.appendChild(h2);",
+  "  var i=document.createElement(\"input\"); i.type=\"text\"; i.placeholder=\"O seu nome completo\";",
+  "  i.setAttribute(\"data-speak\", \"Campo de texto: escreva o seu nome completo\"); app.appendChild(i);",
+  "  var b=document.createElement(\"button\"); b.className=\"primary\"; b.textContent=\"Iniciar teste\"; b.style.marginTop=\"20px\";",
+  "  b.setAttribute(\"data-speak\",\"Iniciar teste\");",
+  "  b.onclick=function(){",
+  "    var n=i.value.trim();",
+  "    if(!n){ alert(\"Escreva o seu nome para começar.\"); speak(\"Escreva o seu nome para começar.\"); return; }",
+  "    student=n;",
+  "    question();",
+  "  };",
+  "  app.appendChild(b);",
+  "}",
+  "var keyHandler=null;",
+  "function question(){",
+  "  if(idx>=T.q.length){ teacherActionScreen(); return; }",
+  "  var q=T.q[idx];",
+  "  var isLast=(idx===T.q.length-1);",
+  "  app.innerHTML=\"\";",
+  "  if(window.tapHandler){ document.removeEventListener(\"pointerdown\", window.tapHandler); window.tapHandler=null; }",
+  "  if(window.tapTimeout){ clearTimeout(window.tapTimeout); window.tapTimeout=null; }",
+  "  var tag=document.createElement(\"span\"); tag.className=\"tag\";",
+  "  tag.textContent=\"Pergunta \"+(idx+1)+\" de \"+T.q.length+(isLast?\" (Última)\":\"\");",
+  "  tag.setAttribute(\"data-no-speak\", \"true\"); app.appendChild(tag);",
+  "  var qWrap=document.createElement(\"div\"); qWrap.className=\"student-q-wrap no-speak\"; qWrap.setAttribute(\"data-no-speak\", \"true\");",
+  "  var h2=document.createElement(\"h2\"); h2.textContent=q.q; h2.className=\"no-speak\"; h2.setAttribute(\"data-no-speak\", \"true\"); qWrap.appendChild(h2);",
+  "  var numHint=document.createElement(\"p\"); numHint.className=\"lead no-speak\";",
+  "  numHint.textContent=\"Toque de 1 a \"+q.o.length+\" vezes no ecrã para responder. 6 toques para rever desde a Pergunta 1. 7 toques para manter a resposta anterior. Bloqueio ao fim de 3 segundos.\";",
+  "  numHint.setAttribute(\"data-no-speak\", \"true\"); qWrap.appendChild(numHint);",
+  "  var optContainer=document.createElement(\"div\"); optContainer.id=\"optContainer\"; optContainer.className=\"no-speak\"; optContainer.setAttribute(\"data-no-speak\", \"true\"); optContainer.style.marginTop=\"20px\";",
+  "  q.o.forEach(function(o,oi){",
+  "    var p=document.createElement(\"p\"); p.className=\"no-speak\"; p.setAttribute(\"data-no-speak\", \"true\");",
+  "    p.style.fontSize=\"1.4rem\"; p.style.margin=\"12px 0\";",
+  "    var isCurrent=(answers[idx]===oi);",
+  "    p.innerHTML=\"<strong>Opção \"+(oi+1)+\".</strong> \"+esc(o)+(isCurrent?\" <span style=\\\"color:var(--success);font-weight:700;\\\">(Resposta guardada)</span>\":\"\");",
+  "    optContainer.appendChild(p);",
+  "  });",
+  "  qWrap.appendChild(optContainer);",
+  "  var tapStatus=document.createElement(\"div\"); tapStatus.id=\"tapStatus\"; tapStatus.className=\"no-speak\"; tapStatus.setAttribute(\"data-no-speak\", \"true\");",
+  "  tapStatus.style.fontSize=\"2.2rem\"; tapStatus.style.fontWeight=\"bold\"; tapStatus.style.color=\"var(--accent)\"; tapStatus.style.marginTop=\"30px\"; tapStatus.style.textAlign=\"center\"; tapStatus.style.padding=\"30px 20px\"; tapStatus.style.border=\"4px dashed #333\"; tapStatus.style.borderRadius=\"14px\";",
+  "  if(answers[idx]!==undefined){",
+  "    tapStatus.textContent=\"Resposta guardada: Opção \"+(answers[idx]+1)+\" (7 toques para manter, 6 para rever)\";",
+  "  }else{",
+  "    tapStatus.textContent=\"A aguardar toques...\";",
+  "  }",
+  "  qWrap.appendChild(tapStatus);",
+  "  app.appendChild(qWrap);",
+  "  var tapCount=0;",
+  "  var advancing=false;",
+  "  window.tapHandler=function(e){",
+  "    if(e.target.tagName===\"BUTTON\") return;",
+  "    if(advancing) return;",
+  "    tapCount++;",
+  "    if(tapCount>7) tapCount=1;",
+  "    if(tapCount<=q.o.length){",
+  "      tapStatus.textContent=\"Toques: \"+tapCount;",
+  "    }else if(tapCount===6){",
+  "      tapStatus.textContent=\"Toques: 6 (Revisão: Voltar à Pergunta 1)\";",
+  "    }else if(tapCount===7){",
+  "      tapStatus.textContent=(answers[idx]!==undefined)?(\"Toques: 7 (Manter Opção \"+(answers[idx]+1)+\" e avançar)\"):\"Toques: 7 (Manter resposta anterior e avançar)\";",
+  "    }else{",
+  "      tapStatus.textContent=\"Toques: \"+tapCount+\" (Opções: 1-\"+q.o.length+\", 6=Revisão, 7=Manter)\";",
+  "    }",
+  "    tapStatus.style.borderColor=\"var(--accent)\";",
+  "    if(window.tapTimeout) clearTimeout(window.tapTimeout);",
+  "    window.tapTimeout=setTimeout(function(){",
+  "      if(tapCount>q.o.length&&tapCount<6){",
+  "        tapStatus.textContent=\"Toques inválidos (\"+tapCount+\"). Toque 1 a \"+q.o.length+\", 6 para rever ou 7 para manter.\";",
+  "        tapCount=0;",
+  "        return;",
+  "      }",
+  "      advancing=true;",
+  "      document.removeEventListener(\"pointerdown\", window.tapHandler);",
+  "      window.tapHandler=null;",
+  "      if(tapCount===6){",
+  "        tapStatus.textContent=\"Bloqueado\";",
+  "        tapStatus.style.color=\"var(--accent)\";",
+  "        tapStatus.style.borderColor=\"var(--accent)\";",
+  "        playTone();",
+  "        speak(\"Bloqueado\");",
+  "        setTimeout(function(){",
+  "          idx=0;",
+  "          question();",
+  "        }, 1500);",
+  "      }else if(tapCount===7){",
+  "        tapStatus.textContent=\"Bloqueado\";",
+  "        tapStatus.style.color=\"var(--success)\";",
+  "        tapStatus.style.borderColor=\"var(--success)\";",
+  "        playTone();",
+  "        speak(\"Bloqueado\");",
+  "        setTimeout(function(){",
+  "          idx++;",
+  "          if(idx<T.q.length) question();",
+  "          else teacherActionScreen();",
+  "        }, 1500);",
+  "      }else{",
+  "        var oi=tapCount-1;",
+  "        answers[idx]=oi;",
+  "        tapStatus.textContent=\"Bloqueado\";",
+  "        tapStatus.style.color=\"var(--success)\";",
+  "        tapStatus.style.borderColor=\"var(--success)\";",
+  "        playTone();",
+  "        speak(\"Bloqueado\");",
+  "        setTimeout(function(){",
+  "          idx++;",
+  "          if(idx<T.q.length) question();",
+  "          else teacherActionScreen();",
+  "        }, 1500);",
+  "      }",
+  "    }, 3000);",
+  "  };",
+  "  app.style.flexGrow=\"1\";",
+  "  document.addEventListener(\"pointerdown\", window.tapHandler);",
+  "  if(keyHandler) document.removeEventListener(\"keydown\", keyHandler);",
+  "  keyHandler=function(e){",
+  "    if(document.activeElement&&document.activeElement.tagName===\"INPUT\") return;",
+  "    var n=parseInt(e.key,10);",
+  "    if(advancing) return;",
+  "    if(!isNaN(n)&&n>=1&&n<=q.o.length){",
+  "      advancing=true;",
+  "      document.removeEventListener(\"keydown\", keyHandler);",
+  "      keyHandler=null;",
+  "      if(window.tapHandler){ document.removeEventListener(\"pointerdown\", window.tapHandler); window.tapHandler=null; }",
+  "      if(window.tapTimeout){ clearTimeout(window.tapTimeout); window.tapTimeout=null; }",
+  "      var oi=n-1;",
+  "      answers[idx]=oi;",
+  "      tapStatus.textContent=\"Bloqueado\";",
+  "      tapStatus.style.color=\"var(--success)\";",
+  "      tapStatus.style.borderColor=\"var(--success)\";",
+  "      playTone();",
+  "      speak(\"Bloqueado\");",
+  "      setTimeout(function(){",
+  "        idx++;",
+  "        if(idx<T.q.length) question();",
+  "        else teacherActionScreen();",
+  "      }, 1500);",
+  "    }else if(n===6){",
+  "      advancing=true;",
+  "      document.removeEventListener(\"keydown\", keyHandler);",
+  "      keyHandler=null;",
+  "      if(window.tapHandler){ document.removeEventListener(\"pointerdown\", window.tapHandler); window.tapHandler=null; }",
+  "      if(window.tapTimeout){ clearTimeout(window.tapTimeout); window.tapTimeout=null; }",
+  "      tapStatus.textContent=\"Bloqueado\";",
+  "      tapStatus.style.color=\"var(--accent)\";",
+  "      tapStatus.style.borderColor=\"var(--accent)\";",
+  "      playTone();",
+  "      speak(\"Bloqueado\");",
+  "      setTimeout(function(){",
+  "        idx=0;",
+  "        question();",
+  "      }, 1500);",
+  "    }else if(n===7){",
+  "      advancing=true;",
+  "      document.removeEventListener(\"keydown\", keyHandler);",
+  "      keyHandler=null;",
+  "      if(window.tapHandler){ document.removeEventListener(\"pointerdown\", window.tapHandler); window.tapHandler=null; }",
+  "      if(window.tapTimeout){ clearTimeout(window.tapTimeout); window.tapTimeout=null; }",
+  "      tapStatus.textContent=\"Bloqueado\";",
+  "      tapStatus.style.color=\"var(--success)\";",
+  "      tapStatus.style.borderColor=\"var(--success)\";",
+  "      playTone();",
+  "      speak(\"Bloqueado\");",
+  "      setTimeout(function(){",
+  "        idx++;",
+  "        if(idx<T.q.length) question();",
+  "        else teacherActionScreen();",
+  "      }, 1500);",
+  "    }",
+  "  };",
+  "  document.addEventListener(\"keydown\", keyHandler);",
+  "  if(idx>0){",
+  "    var back=document.createElement(\"button\"); back.type=\"button\"; back.textContent=\"← Anterior\";",
+  "    back.setAttribute(\"data-speak\", \"Voltar à pergunta anterior\");",
+  "    back.style.marginTop=\"30px\";",
+  "    back.onclick=function(e){",
+  "      e.stopPropagation();",
+  "      if(window.tapHandler){ document.removeEventListener(\"pointerdown\", window.tapHandler); window.tapHandler=null; }",
+  "      if(window.tapTimeout){ clearTimeout(window.tapTimeout); window.tapTimeout=null; }",
+  "      if(keyHandler){ document.removeEventListener(\"keydown\", keyHandler); keyHandler=null; }",
+  "      idx--; question();",
+  "    };",
+  "    app.appendChild(back);",
+  "  }",
+  "  if(isLast){",
+  "    var teachBtn=document.createElement(\"button\"); teachBtn.type=\"button\"; teachBtn.className=\"primary\"; teachBtn.style.marginTop=\"20px\";",
+  "    teachBtn.textContent=\"📱 Professor: Concluir\";",
+  "    teachBtn.setAttribute(\"data-speak\", \"Professor: Concluir teste e ver resultados\");",
+  "    teachBtn.onclick=function(e){",
+  "      e.stopPropagation();",
+  "      if(window.tapHandler){ document.removeEventListener(\"pointerdown\", window.tapHandler); window.tapHandler=null; }",
+  "      if(window.tapTimeout){ clearTimeout(window.tapTimeout); window.tapTimeout=null; }",
+  "      if(keyHandler){ document.removeEventListener(\"keydown\", keyHandler); keyHandler=null; }",
+  "      teacherActionScreen();",
+  "    };",
+  "    app.appendChild(teachBtn);",
+  "  }",
+  "}",
+  "var teacherTapHandler=null;",
+  "function teacherActionScreen(){",
+  "  app.innerHTML=\"\";",
+  "  var tag=document.createElement(\"span\"); tag.className=\"tag\"; tag.textContent=\"Fim do Teste\"; app.appendChild(tag);",
+  "  var h1=document.createElement(\"h1\"); h1.textContent=\"Perguntas Concluídas!\"; app.appendChild(h1);",
+  "  var h2=document.createElement(\"h2\"); h2.textContent=student+\" — \"+T.t; app.appendChild(h2);",
+  "  var card=document.createElement(\"div\"); card.className=\"card-box\";",
+  "  var p1=document.createElement(\"p\"); p1.style.fontSize=\"1.25rem\"; p1.style.fontWeight=\"700\";",
+  "  p1.textContent=\"Todas as perguntas foram respondidas pelo aluno.\"; card.appendChild(p1);",
+  "  var p2=document.createElement(\"p\"); p2.className=\"lead\";",
+  "  p2.textContent=\"Entregue o dispositivo ao professor. Clique no botão abaixo para gerar o código QR com a nota e a lista de perguntas erradas.\"; card.appendChild(p2);",
+  "  var genBtn=document.createElement(\"button\"); genBtn.type=\"button\"; genBtn.className=\"primary\";",
+  "  genBtn.textContent=\"📱 Professor: Gerar Código QR com Correção\";",
+  "  genBtn.setAttribute(\"data-speak\",\"Professor: Clique para gerar o código QR com os resultados e perguntas erradas\");",
+  "  genBtn.onclick=function(){",
+  "    if(teacherTapHandler){ document.removeEventListener(\"pointerdown\", teacherTapHandler); teacherTapHandler=null; }",
+  "    finish();",
+  "  };",
+  "  card.appendChild(genBtn);",
+  "  app.appendChild(card);",
+  "  if(T.q.length>0){",
+  "    var revBtn=document.createElement(\"button\"); revBtn.type=\"button\"; revBtn.textContent=\"← Rever última pergunta\";",
+  "    revBtn.setAttribute(\"data-speak\",\"Voltar para rever a última pergunta\");",
+  "    revBtn.onclick=function(){",
+  "      if(teacherTapHandler){ document.removeEventListener(\"pointerdown\", teacherTapHandler); teacherTapHandler=null; }",
+  "      idx=T.q.length-1; question();",
+  "    };",
+  "    app.appendChild(revBtn);",
+  "    var revFirstBtn=document.createElement(\"button\"); revFirstBtn.type=\"button\";",
+  "    revFirstBtn.style.marginTop=\"12px\";",
+  "    revFirstBtn.textContent=\"🔄 Rever desde a Pergunta 1 (ou dê 6 toques no ecrã)\";",
+  "    revFirstBtn.setAttribute(\"data-speak\",\"Rever perguntas desde a primeira pergunta para alterar respostas se necessário\");",
+  "    revFirstBtn.onclick=function(){",
+  "      if(teacherTapHandler){ document.removeEventListener(\"pointerdown\", teacherTapHandler); teacherTapHandler=null; }",
+  "      idx=0; question();",
+  "    };",
+  "    app.appendChild(revFirstBtn);",
+  "  }",
+  "  var tCount=0, tTimeout=null;",
+  "  if(teacherTapHandler){ document.removeEventListener(\"pointerdown\", teacherTapHandler); teacherTapHandler=null; }",
+  "  teacherTapHandler=function(e){",
+  "    if(e.target.tagName===\"BUTTON\") return;",
+  "    tCount++;",
+  "    if(tTimeout) clearTimeout(tTimeout);",
+  "    tTimeout=setTimeout(function(){",
+  "      if(tCount===6){",
+  "        document.removeEventListener(\"pointerdown\", teacherTapHandler);",
+  "        teacherTapHandler=null;",
+  "        idx=0; question();",
+  "      }",
+  "      tCount=0;",
+  "    }, 2000);",
+  "  };",
+  "  document.addEventListener(\"pointerdown\", teacherTapHandler);",
+  "  playTone();",
+  "}",
+  "function finish(){",
+  "  if(teacherTapHandler){ document.removeEventListener(\"pointerdown\", teacherTapHandler); teacherTapHandler=null; }",
+  "  var total=T.q.length, score=0, wrongs=[], details=[];",
+  "  for(var i=0;i<total;i++){",
+  "    var q=T.q[i];",
+  "    var a=answers[i];",
+  "    var isRight=(a===q.a);",
+  "    if(isRight){",
+  "      score++;",
+  "      details.push(\"P\"+(i+1)+\": CORRETA (Opção \"+(q.a+1)+\")\");",
+  "    }else{",
+  "      var uText=(a!==undefined&&q.o[a])?q.o[a]:\"Sem resposta\";",
+  "      var cText=q.o[q.a]||\"\";",
+  "      var uNum=(a!==undefined)?(a+1):\"-\";",
+  "      wrongs.push({",
+  "        num:i+1,",
+  "        qText:q.q,",
+  "        uNum:uNum,",
+  "        uText:uText,",
+  "        cNum:q.a+1,",
+  "        cText:cText",
+  "      });",
+  "      details.push(\"P\"+(i+1)+\": ERRADA (Aluno: [\"+uNum+\"] (\"+uText+\") | Correta: [\"+(q.a+1)+\"] (\"+cText+\"))\");",
+  "    }",
+  "  }",
+  "  var pct=Math.round(score/total*1000)/10;",
+  "  app.innerHTML=\"\";",
+  "  var h1=document.createElement(\"h1\"); h1.textContent=\"Resultado do Teste\"; app.appendChild(h1);",
+  "  var h2=document.createElement(\"h2\"); h2.textContent=student+\" — \"+T.t; app.appendChild(h2);",
+  "  var s=document.createElement(\"div\"); s.className=\"score\";",
+  "  s.textContent=score+\" / \"+total+\" (\"+pct.toFixed(1)+\"%)\"; app.appendChild(s);",
+  "  if(wrongs.length===0){",
+  "    var ok=document.createElement(\"div\"); ok.className=\"ok-box\";",
+  "    ok.textContent=\"✓ Parabéns! Todas as \"+total+\" perguntas estão corretas (0 erros).\";",
+  "    app.appendChild(ok);",
+  "  }else{",
+  "    var errBox=document.createElement(\"div\"); errBox.className=\"card-box\";",
+  "    var errTitle=document.createElement(\"h3\"); errTitle.style.color=\"var(--accent)\"; errTitle.style.margin=\"0 0 12px\";",
+  "    errTitle.textContent=\"⚠ Perguntas que o aluno errou (\"+wrongs.length+\" de \"+total+\"):\";",
+  "    errBox.appendChild(errTitle);",
+  "    wrongs.forEach(function(w){",
+  "      var item=document.createElement(\"div\"); item.className=\"err-item\";",
+  "      item.innerHTML=\"<strong>Pergunta \"+w.num+\":</strong> \"+esc(w.qText)+\"<br>\"+",
+  "        \"<span style=\\\"color:var(--accent);font-weight:700\\\">Aluno escolheu:</span> [\"+w.uNum+\"] \"+esc(w.uText)+\"<br>\"+",
+  "        \"<span style=\\\"color:var(--success);font-weight:700\\\">Opção correta:</span> [\"+w.cNum+\"] \"+esc(w.cText);",
+  "      errBox.appendChild(item);",
+  "    });",
+  "    app.appendChild(errBox);",
+  "  }",
+  "  var c=document.createElement(\"div\"); c.className=\"center\";",
+  "  var box=document.createElement(\"div\"); box.className=\"qr\";",
+  "  var cv=document.createElement(\"canvas\"); box.appendChild(cv); c.appendChild(box); app.appendChild(c);",
+  "  var wrongSummary=wrongs.length===0?\"TODAS CORRETAS (0 erros)\":",
+  "    (wrongs.length+\" ERRO(S):\\n\"+wrongs.map(function(w){",
+  "      return \"• P\"+w.num+\": Escolheu [\"+w.uNum+\"] (\"+w.uText+\") | Correta era [\"+w.cNum+\"] (\"+w.cText+\")\";",
+  "    }).join(\"\\n\"));",
+  "  var payload=\"ALUNO: \"+student+\"\\n\"+",
+  "    \"TESTE: \"+T.t+\"\\n\"+",
+  "    \"PONTUAÇÃO: \"+score+\"/\"+total+\" (\"+pct.toFixed(1)+\"%)\\n\"+",
+  "    \"STATUS: \"+(wrongs.length===0?\"SEM ERROS\":wrongs.length+\" ERROS\")+\"\\n\"+",
+  "    \"DETALHES:\\n\"+wrongSummary+\"\\n\"+",
+  "    \"RESUMO: \"+details.join(\" | \");",
+  "  try{",
+  "    window.QRCodeLib.toCanvas(cv,payload,{width:280,margin:1,errorCorrectionLevel:\"M\"});",
+  "  }catch(e){",
+  "    var p=document.createElement(\"p\"); p.textContent=\"Erro ao gerar QR: \"+e.message; app.appendChild(p);",
+  "  }",
+  "  var raw=document.createElement(\"div\"); raw.className=\"raw-payload\";",
+  "  raw.textContent=\"Texto embutido no Código QR:\\n\\n\"+payload; app.appendChild(raw);",
+  "  var again=document.createElement(\"button\"); again.className=\"primary\"; again.style.marginTop=\"20px\";",
+  "  again.textContent=\"Começar de novo\"; again.setAttribute(\"data-speak\", \"Começar de novo com outro aluno\");",
+  "  again.onclick=nameScreen;",
+  "  app.appendChild(again);",
+  "}",
+  "function esc(s){return String(s).replace(/&/g,\"&amp;\").replace(/</g,\"&lt;\").replace(/>/g,\"&gt;\").replace(/\"/g,\"&quot;\");}",
+  "nameScreen();"
+].join('\n');
+
+/* Initial render */
+renderTeacherQuestions();
+</script>
+</body>
+</html>
